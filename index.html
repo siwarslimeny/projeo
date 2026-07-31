@@ -736,6 +736,21 @@ input,textarea,select{font-family:'Inter',sans-serif}
 @media (max-width:700px){ .profile-grid{grid-template-columns:1fr} }
 
 /* ══════════════════════════════════════
+   NOTES
+══════════════════════════════════════ */
+.notes-scroll{flex:1;overflow-y:auto;padding:20px}
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.note-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;min-height:150px}
+.note-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.note-card-title{font-size:13.5px;font-weight:700;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-card-preview{font-size:12px;color:var(--text2);line-height:1.5;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+.note-card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.note-card-time{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.note-editor-title{width:100%;padding:10px 12px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:15px;font-weight:700;outline:none;margin-bottom:10px}
+.note-editor-body{width:100%;min-height:320px;padding:12px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:13px;line-height:1.7;outline:none;resize:vertical;font-family:'Inter',sans-serif}
+.note-editor-title:focus,.note-editor-body:focus{border-color:var(--violet)}
+
+/* ══════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════ */
 .sb-toggle-btn{display:none;width:32px;height:32px;border-radius:var(--r);background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:16px;cursor:pointer;align-items:center;justify-content:center;transition:background .15s}
@@ -743,13 +758,13 @@ input,textarea,select{font-family:'Inter',sans-serif}
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199}
 .sb-overlay.open{display:block}
 @media (max-width:900px){
-  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 0 40px rgba(0,0,0,.4)}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:250;transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 0 40px rgba(0,0,0,.4)}
   .sidebar.open{transform:translateX(0)}
   .sb-toggle-btn{display:flex}
   .dash-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .task-detail-grid{grid-template-columns:1fr}
-  .projects-grid,.members-grid,.files-grid{grid-template-columns:1fr}
+  .projects-grid,.members-grid,.files-grid,.notes-grid{grid-template-columns:1fr}
 }
 @media (max-width:520px){
   .auth-form-panel{padding:32px 24px}
@@ -870,6 +885,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
       <div class="sb-section">Espace personnel</div>
       <div class="sb-item" onclick="navigate('profile')"><span class="ni">🙍</span> Mon Profil</div>
       <div class="sb-item" onclick="navigate('todo')"><span class="ni">✅</span> Ma To-Do List <span class="nbadge" id="nb-todo">0</span></div>
+      <div class="sb-item" onclick="navigate('notes')"><span class="ni">📝</span> Mes Notes <span class="nbadge" id="nb-notes">0</span></div>
       <div class="sb-item" onclick="navigate('remarks')"><span class="ni">💬</span> Remarques <span class="nbadge" id="nb-remarks">0</span></div>
       <div class="sb-section">Projets actifs</div>
       <div id="sb-projects-list"></div>
@@ -878,7 +894,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
       <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()">
         <span class="tt-icon" id="theme-toggle-icon">🌙</span> <span id="theme-toggle-label">Mode sombre</span>
       </button>
-      <button class="btn-logout" onclick="doLogout()">⎋ &nbsp;Déconnexion</button>
+      <button type="button" class="btn-logout" id="btn-logout" onclick="doLogout()">⎋ &nbsp;Déconnexion</button>
     </div>
   </nav>
   <div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
@@ -917,7 +933,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
               <h2 id="dash-welcome-name">Bonjour, Admin 👋</h2>
               <p>Voici un aperçu de vos projets en cours</p>
             </div>
-            <div class="dash-welcome-badge" id="dash-role-badge">Administrateur</div>
+            <div class="dash-role-badge" id="dash-role-badge" style="padding:7px 14px;border-radius:20px;font-size:11px;font-weight:700;background:var(--violet-bg);color:var(--violet2);border:1px solid rgba(124,92,252,.3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;position:relative;z-index:1">Administrateur</div>
           </div>
           <div class="stats-grid" id="stats-grid"></div>
           <div class="dash-grid">
@@ -1071,6 +1087,20 @@ input,textarea,select{font-family:'Inter',sans-serif}
             <button class="btn btn-primary" onclick="addTodo()">＋ Ajouter</button>
           </div>
           <div class="todo-list" id="todo-list"></div>
+        </div>
+      </div>
+
+      <!-- ── NOTES ── -->
+      <div class="view" id="view-notes">
+        <div class="page-header">
+          <div>
+            <div class="page-header-title">Mes Notes</div>
+            <div class="page-header-sub" id="notes-count-sub">Vos documents texte, liés ou non à un projet</div>
+          </div>
+        </div>
+        <div class="notes-scroll">
+          <div class="files-tabs" id="notes-tabs"></div>
+          <div class="notes-grid" id="notes-grid"></div>
         </div>
       </div>
 
@@ -1256,6 +1286,9 @@ let TODOS = [
 ];
 let todoIdCounter = 4;
 
+let NOTES = [];
+let noteIdCounter = 1;
+
 let REMARKS = [
   {id:'rk1',from:'u2',to:'u1',text:'Peux-tu valider la dernière maquette du checkout ?',time:'Il y a 2h',read:false,replies:[]},
   {id:'rk2',from:'u1',to:'u2',text:'On avance bien sur le Sprint 3, merci pour le suivi !',time:'Il y a 1 jour',read:true,replies:[{from:'u2',text:'Avec plaisir 🙌',time:'Il y a 23h'}]},
@@ -1346,21 +1379,26 @@ function doLogin() {
   document.getElementById('auth-error').classList.remove('show');
   CU = user;
   if (remember) safeSet('sf_remember_email', email); else safeRemove('sf_remember_email');
+  safeSet('sf_session_uid', user.id);
   document.getElementById('auth-screen').style.display = 'none';
   const app = document.getElementById('app');
   app.classList.add('visible');
   addActivity(CU.id,'s\'est connecté(e)','','');
   bootApp();
+  saveState();
 }
 
 function doLogout() {
+  closeMobileSidebar();
   CU = null;
+  safeRemove('sf_session_uid');
   document.getElementById('app').classList.remove('visible');
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('auth-pass').value = '';
   const remembered = safeGet('sf_remember_email');
   document.getElementById('auth-email').value = remembered || '';
   if (remembered) document.getElementById('auth-remember').checked = true;
+  saveState();
 }
 
 /* ════════════════════════════════════════════════
@@ -1370,28 +1408,20 @@ function toggleSidebar() {
   document.querySelector('.sidebar').classList.toggle('open');
   document.getElementById('sb-overlay').classList.toggle('open');
 }
+function closeMobileSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.getElementById('sb-overlay');
+  if (sb) sb.classList.remove('open');
+  if (ov) ov.classList.remove('open');
+}
 function closeSidebarOnMobile() {
-  if (window.innerWidth <= 900) {
-    document.querySelector('.sidebar').classList.remove('open');
-    document.getElementById('sb-overlay').classList.remove('open');
-  }
+  if (window.innerWidth <= 900) closeMobileSidebar();
 }
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('auth-screen').style.display !== 'none') doLogin();
   if (e.key === 'Escape') closeModal();
 });
-
-// Pre-fill remembered email on load
-(function initRemembered() {
-  const remembered = safeGet('sf_remember_email');
-  if (remembered) {
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('auth-email').value = remembered;
-      document.getElementById('auth-remember').checked = true;
-    });
-  }
-})();
 
 /* ════════════════════════════════════════════════
    THEME (Light / Dark mode)
@@ -1452,8 +1482,8 @@ function checkDeadlineReminders() {
 /* ════════════════════════════════════════════════
    NAVIGATION
 ════════════════════════════════════════════════ */
-const PAGE_TITLES = {dashboard:'Tableau de bord',kanban:'Kanban Board',projects:'Projets',sprints:'Sprints',members:'Membres',calendar:'Calendrier',timeline:'Activity Timeline',todo:'Ma To-Do List',remarks:'Remarques internes',files:'Team Files',profile:'Mon Profil'};
-const ACTION_LABELS = {dashboard:'＋ Nouvelle tâche',kanban:'＋ Ajouter une tâche',projects:'＋ Nouveau projet',sprints:'＋ Nouveau sprint',members:'＋ Ajouter un compte',calendar:'＋ Réunion / Événement',timeline:'',todo:'',remarks:'',files:'＋ Importer un fichier',profile:''};
+const PAGE_TITLES = {dashboard:'Tableau de bord',kanban:'Kanban Board',projects:'Projets',sprints:'Sprints',members:'Membres',calendar:'Calendrier',timeline:'Activity Timeline',todo:'Ma To-Do List',notes:'Mes Notes',remarks:'Remarques internes',files:'Team Files',profile:'Mon Profil'};
+const ACTION_LABELS = {dashboard:'＋ Nouvelle tâche',kanban:'＋ Ajouter une tâche',projects:'＋ Nouveau projet',sprints:'＋ Nouveau sprint',members:'＋ Ajouter un compte',calendar:'＋ Réunion / Événement',timeline:'',todo:'',notes:'＋ Nouvelle note',remarks:'',files:'＋ Importer un fichier',profile:''};
 
 function navigate(view) {
   activeView = view;
@@ -1475,6 +1505,7 @@ function navigate(view) {
   if (view === 'calendar')   renderCalendar();
   if (view === 'timeline')   renderTimeline();
   if (view === 'todo')       renderTodos();
+  if (view === 'notes')      renderNotes();
   if (view === 'remarks')    renderRemarks();
   if (view === 'files')      renderFiles();
   if (view === 'profile')    renderProfile();
@@ -1490,7 +1521,9 @@ function refreshAllViews() {
   if (activeView === 'projects')  renderProjects();
   if (activeView === 'sprints')   renderSprints();
   if (activeView === 'todo')      renderTodos();
+  if (activeView === 'notes')     renderNotes();
   if (activeView === 'files')     renderFiles();
+  saveState();
 }
 
 function handleTopAction() {
@@ -1499,6 +1532,7 @@ function handleTopAction() {
   if (activeView === 'sprints')  openSprintModal();
   if (activeView === 'members')  openMemberModal();
   if (activeView === 'calendar') openMeetingModal();
+  if (activeView === 'notes')    openNoteModal();
   if (activeView === 'files')    document.getElementById('files-upload-input').click();
 }
 
@@ -1702,8 +1736,12 @@ function loadKanban() {
   const proj = PROJECTS.find(p => p.id === pid);
   document.getElementById('kanban-project-name').textContent = proj ? proj.name : '';
   const board = document.getElementById('kanban-board');
+  /* Un membre non-admin (Dev, Designer, Testeur…) ne voit dans le Kanban que
+     ses propres tâches assignées. L'administrateur voit toutes les tâches
+     de tous les membres du projet. */
+  const isAdmin = CU.role === 'ADMIN';
   board.innerHTML = COLS.map(col => {
-    const colTasks = TASKS.filter(t => t.projectId === pid && t.status === col.id);
+    const colTasks = TASKS.filter(t => t.projectId === pid && t.status === col.id && (isAdmin || t.assignee === CU.id));
     return `
       <div class="kanban-col" id="col-${col.id}" ondragover="event.preventDefault()" ondrop="dropTask(event,'${col.id}')">
         <div class="kanban-col-head">
@@ -1995,6 +2033,7 @@ function saveMemberProfile(id) {
   closeModal();
   showToast('Profil mis à jour', 'ok');
   renderMembers();
+  saveState();
 }
 
 function deleteMember(id) {
@@ -2004,6 +2043,7 @@ function deleteMember(id) {
   closeModal();
   showToast('Compte supprimé', 'ok');
   renderMembers();
+  saveState();
 }
 
 function toggleMemberActive(id) {
@@ -2012,6 +2052,7 @@ function toggleMemberActive(id) {
   u.active = u.active === false ? true : false;
   showToast(u.active ? 'Compte réactivé' : 'Compte désactivé', u.active ? 'ok' : 'info');
   renderMembers();
+  saveState();
 }
 
 function openMemberModal() {
@@ -2048,104 +2089,129 @@ function saveMember() {
   closeModal();
   showToast('Compte créé avec succès !', 'ok');
   renderMembers();
+  saveState();
 }
 
 /* ════════════════════════════════════════════════
-   TASK MODAL
+   TASK MODAL (création ET modification)
+   — La tâche est désormais toujours assignée automatiquement
+     à son créateur (plus de champ "Assigné à" à la création).
+     La réassignation reste possible depuis le détail de la tâche.
 ════════════════════════════════════════════════ */
-function openTaskModal(defaultStatus) {
-  const pid = selectedProject || 'p1';
+function openTaskModal(defaultStatus, editId) {
+  const editing = editId ? TASKS.find(t => t.id === editId) : null;
+  const pid = editing ? editing.projectId : (selectedProject || 'p1');
   const proj = PROJECTS.find(p => p.id === pid);
-  const projMembers = proj ? USERS.filter(u => proj.members.includes(u.id)) : USERS;
   const sprintsForProj = SPRINTS.filter(s => s.projectId === pid);
+  const statusForForm = editing ? editing.status : (defaultStatus || 'backlog');
 
-  openModal('Nouvelle tâche', `
+  openModal(editing ? `Modifier « ${editing.title} »` : 'Nouvelle tâche', `
+    <input type="hidden" id="task-edit-id" value="${editing ? editing.id : ''}">
     <div class="form-row">
       <div class="fg span2" style="grid-column:span 2">
         <label>Titre *</label>
-        <input type="text" id="task-title" placeholder="Description courte de la tâche" style="grid-column:span 2">
+        <input type="text" id="task-title" placeholder="Description courte de la tâche" style="grid-column:span 2" value="${editing ? String(editing.title).replace(/"/g,'&quot;') : ''}">
       </div>
     </div>
-    <div class="fg"><label>Description</label><textarea id="task-desc" placeholder="Détails, critères d'acceptation…"></textarea></div>
+    <div class="fg"><label>Description</label><textarea id="task-desc" placeholder="Détails, critères d'acceptation…">${editing ? (editing.desc||'') : ''}</textarea></div>
     <div class="form-row">
       <div class="fg">
         <label>Statut</label>
         <select id="task-status">
-          <option value="backlog" ${defaultStatus==='backlog'?'selected':''}>Backlog</option>
-          <option value="todo" ${defaultStatus==='todo'?'selected':''}>À faire</option>
-          <option value="inprogress" ${defaultStatus==='inprogress'?'selected':''}>En cours</option>
-          <option value="done" ${defaultStatus==='done'?'selected':''}>Terminé</option>
+          <option value="backlog" ${statusForForm==='backlog'?'selected':''}>Backlog</option>
+          <option value="todo" ${statusForForm==='todo'?'selected':''}>À faire</option>
+          <option value="inprogress" ${statusForForm==='inprogress'?'selected':''}>En cours</option>
+          <option value="done" ${statusForForm==='done'?'selected':''}>Terminé</option>
         </select>
       </div>
       <div class="fg">
         <label>Priorité</label>
         <select id="task-priority">
-          <option value="low">🟢 Faible</option>
-          <option value="medium" selected>🟡 Moyenne</option>
-          <option value="high">🔴 Haute</option>
+          <option value="low" ${editing && editing.priority==='low'?'selected':''}>🟢 Faible</option>
+          <option value="medium" ${!editing || editing.priority==='medium'?'selected':''}>🟡 Moyenne</option>
+          <option value="high" ${editing && editing.priority==='high'?'selected':''}>🔴 Haute</option>
         </select>
       </div>
     </div>
     <div class="form-row">
       <div class="fg">
-        <label>Assigné à</label>
-        <select id="task-assignee">
-          <option value="">Non assigné</option>
-          ${projMembers.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}
-        </select>
+        <label>Date de début</label>
+        <input type="date" id="task-start" value="${editing && editing.start ? editing.start : ''}">
       </div>
       <div class="fg">
         <label>Échéance</label>
-        <input type="date" id="task-due" value="${new Date(Date.now()+7*86400000).toISOString().slice(0,10)}">
+        <input type="date" id="task-due" value="${editing ? (editing.due||'') : new Date(Date.now()+7*86400000).toISOString().slice(0,10)}">
       </div>
     </div>
     <div class="form-row">
       <div class="fg">
         <label>Sprint</label>
         <select id="task-sprint">
-          ${sprintsForProj.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}
+          <option value="">— Aucun —</option>
+          ${sprintsForProj.map(s=>`<option value="${s.id}" ${editing && editing.sprintId===s.id?'selected':''}>${s.name}</option>`).join('')}
         </select>
       </div>
       <div class="fg">
         <label>Tags (virgule)</label>
-        <input type="text" id="task-tags" placeholder="Frontend, API, Design…">
+        <input type="text" id="task-tags" placeholder="Frontend, API, Design…" value="${editing ? editing.tags.join(', ') : ''}">
       </div>
     </div>
-    <div class="fg"><label>Temps estimé (heures)</label><input type="number" id="task-estimate" min="0" step="0.5" value="4"></div>`,
+    <div class="fg"><label>Temps estimé (heures)</label><input type="number" id="task-estimate" min="0" step="0.5" value="${editing ? editing.estimate : 4}"></div>
+    ${!editing ? `<p style="font-size:11.5px;color:var(--text3);margin-top:-4px">ℹ️ Cette tâche sera automatiquement assignée à vous (<strong>${CU.name}</strong>).</p>` : ''}`,
     `<button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
-     <button class="btn btn-primary" onclick="saveTask('${pid}')">＋ Créer la tâche</button>`);
+     <button class="btn btn-primary" onclick="saveTask('${pid}')">${editing ? '✓ Enregistrer les modifications' : '＋ Créer la tâche'}</button>`);
 }
 
 function saveTask(pid) {
   const title = document.getElementById('task-title').value.trim();
   if (!title) { showToast('Le titre est requis', 'err'); return; }
-  const newTask = {
-    id: 't' + taskIdCounter++,
-    projectId: pid,
-    sprintId: document.getElementById('task-sprint')?.value || '',
-    title,
-    desc: document.getElementById('task-desc').value,
-    status: document.getElementById('task-status').value,
-    priority: document.getElementById('task-priority').value,
-    assignee: document.getElementById('task-assignee').value || null,
-    due: document.getElementById('task-due').value,
-    tags: document.getElementById('task-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    comments: [],
-    estimate: parseFloat(document.getElementById('task-estimate').value) || 4,
-    sessions: [],
-    timerRunning: false,
-    timerStart: null,
-  };
-  TASKS.push(newTask);
-  addActivity(CU.id,'a créé la tâche',`"${title}"`,PROJECTS.find(p=>p.id===pid)?.name||'');
-  addNotif(`${CU.name} a créé "${title}"`, 'task');
-  if (newTask.assignee && newTask.assignee !== CU.id) {
-    const au = USERS.find(u=>u.id===newTask.assignee);
-    addNotif(`Nouvelle tâche assignée : "${title}" (${au?.name||''})`, 'task');
+  const editId = document.getElementById('task-edit-id')?.value;
+  const desc = document.getElementById('task-desc').value;
+  const status = document.getElementById('task-status').value;
+  const priority = document.getElementById('task-priority').value;
+  const start = document.getElementById('task-start')?.value || '';
+  const due = document.getElementById('task-due').value;
+  const sprintId = document.getElementById('task-sprint')?.value || '';
+  const tags = document.getElementById('task-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const estimate = parseFloat(document.getElementById('task-estimate').value) || 4;
+
+  if (editId) {
+    // ── MODIFICATION D'UNE TÂCHE EXISTANTE ──
+    const t = TASKS.find(x => x.id === editId);
+    if (!t) return;
+    t.title = title; t.desc = desc; t.status = status; t.priority = priority;
+    t.start = start; t.due = due; t.sprintId = sprintId; t.tags = tags; t.estimate = estimate;
+    addActivity(CU.id,'a modifié la tâche',`"${title}"`,PROJECTS.find(p=>p.id===pid)?.name||'');
+    closeModal();
+    showToast('Tâche mise à jour', 'ok');
+  } else {
+    // ── CRÉATION — assignation automatique au créateur ──
+    const newTask = {
+      id: 't' + taskIdCounter++,
+      projectId: pid,
+      sprintId,
+      title, desc, status, priority,
+      assignee: CU.id,
+      start, due,
+      tags,
+      comments: [],
+      estimate,
+      sessions: [],
+      timerRunning: false,
+      timerStart: null,
+    };
+    TASKS.push(newTask);
+    addActivity(CU.id,'a créé la tâche',`"${title}"`,PROJECTS.find(p=>p.id===pid)?.name||'');
+    addNotif(`${CU.name} a créé "${title}" (auto-assignée)`, 'task');
+    closeModal();
+    showToast('Tâche créée et assignée à vous-même !', 'ok');
   }
-  closeModal();
-  showToast('Tâche créée avec succès !', 'ok');
   refreshAllViews();
+}
+
+/* Ouvre le formulaire d'édition complet d'une tâche depuis son détail */
+function editTaskDetails(id) {
+  openTaskModal(null, id);
 }
 
 /* ════════════════════════════════════════════════
@@ -2201,6 +2267,7 @@ function openTaskDetail(id) {
         <div style="background:var(--surface2);border-radius:var(--r);padding:12px">
           <div class="detail-field"><span class="detail-field-label">Priorité</span><span class="detail-field-value">${prioMap[t.priority]}</span></div>
           <div class="detail-field"><span class="detail-field-label">Statut</span><span class="detail-field-value">${statusMap[t.status]}</span></div>
+          <div class="detail-field"><span class="detail-field-label">Début</span><span class="detail-field-value" style="font-family:var(--mono)">${t.start||'—'}</span></div>
           <div class="detail-field"><span class="detail-field-label">Échéance</span><span class="detail-field-value" style="font-family:var(--mono)">${t.due||'—'}</span></div>
           <div class="detail-field"><span class="detail-field-label">Projet</span><span class="detail-field-value">${proj?.name||'—'}</span></div>
           <div class="detail-field"><span class="detail-field-label">Sprint</span><span class="detail-field-value">${sprint?.name||'—'}</span></div>
@@ -2243,6 +2310,7 @@ function openTaskDetail(id) {
           </div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;gap:7px;margin-top:4px">
+          <button class="btn btn-ghost" style="font-size:12px" onclick="editTaskDetails('${id}')">✎ Modifier la tâche (titre, dates, priorité…)</button>
           <button class="btn btn-danger" style="font-size:12px" onclick="deleteTask('${id}')">🗑️ Supprimer la tâche</button>
         </div>
       </div>
@@ -2272,6 +2340,7 @@ function reassignTask(taskId, userId) {
   addNotif(`Tâche "${t.title}" assignée à ${u.name}`, 'task');
   showToast(`Tâche réassignée à ${u.name}`, 'ok');
   if (activeView === 'kanban') loadKanban();
+  saveState();
 }
 
 function deleteTask(id) {
@@ -2304,6 +2373,7 @@ function addComment(taskId) {
     </div>`;
   }).join('');
   showToast('Commentaire ajouté', 'ok');
+  saveState();
 }
 
 /* ════════════════════════════════════════════════
@@ -2397,6 +2467,7 @@ function deleteProject(id) {
   TASKS = TASKS.filter(t => t.projectId !== id);
   FILES = FILES.filter(f => f.projectId !== id);
   TODOS.forEach(t => { if (t.projectId === id) t.projectId = null; });
+  NOTES.forEach(n => { if (n.projectId === id) n.projectId = null; });
   if (selectedProject === id) selectedProject = PROJECTS[0]?.id || null;
   addActivity(CU.id,'a supprimé le projet',`"${p.name}"`,'');
   closeModal();
@@ -2511,9 +2582,6 @@ function deleteSprint(id) {
 /* ════════════════════════════════════════════════
    PERSONAL TO-DO LIST (privée par utilisateur)
 ════════════════════════════════════════════════ */
-/* Chaque utilisateur peut créer plusieurs to-do lists : une liste "Personnelle" (sans projet)
-   + une liste par projet auquel il a accès. Les tâches liées à un projet contribuent
-   automatiquement au calcul de sa progression (voir computeProjectProgress). */
 let activeTodoProject = 'all';
 
 function userTodoProjects() {
@@ -2644,6 +2712,100 @@ function deleteTodo(id) {
 }
 
 /* ════════════════════════════════════════════════
+   MES NOTES (pages de texte façon "Word", liées à un projet)
+════════════════════════════════════════════════ */
+let activeNotesProject = 'all';
+
+function userNotesProjects() { return PROJECTS.filter(p => p.members.includes(CU.id) || CU.role === 'ADMIN'); }
+
+function renderNotes() {
+  const myProjects = userNotesProjects();
+  const mineAll = NOTES.filter(n => n.userId === CU.id);
+  if (activeNotesProject !== 'all' && activeNotesProject !== 'personal' && !myProjects.some(p=>p.id===activeNotesProject)) {
+    activeNotesProject = 'all';
+  }
+  const tabsHtml = [`<div class="files-tab ${activeNotesProject==='all'?'active':''}" onclick="setNotesProjectFilter('all')">Toutes <span style="opacity:.7">(${mineAll.length})</span></div>`,
+    `<div class="files-tab ${activeNotesProject==='personal'?'active':''}" onclick="setNotesProjectFilter('personal')">👤 Personnel <span style="opacity:.7">(${mineAll.filter(n=>!n.projectId).length})</span></div>`]
+    .concat(myProjects.map(p => `<div class="files-tab ${activeNotesProject===p.id?'active':''}" onclick="setNotesProjectFilter('${p.id}')">${p.icon} ${p.name} <span style="opacity:.7">(${mineAll.filter(n=>n.projectId===p.id).length})</span></div>`));
+  document.getElementById('notes-tabs').innerHTML = tabsHtml.join('');
+
+  const mine = mineAll
+    .filter(n => activeNotesProject==='all' ? true : activeNotesProject==='personal' ? !n.projectId : n.projectId===activeNotesProject)
+    .sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
+
+  document.getElementById('notes-count-sub').textContent = `${mineAll.length} note(s) — vos documents texte personnels`;
+  document.getElementById('nb-notes').textContent = mineAll.length;
+
+  const grid = document.getElementById('notes-grid');
+  if (!mine.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📝</div><p>Aucune note ici. Cliquez sur « Nouvelle note » pour écrire votre premier document.</p></div>`;
+    return;
+  }
+  grid.innerHTML = mine.map(n => {
+    const proj = n.projectId ? PROJECTS.find(p=>p.id===n.projectId) : null;
+    const preview = (n.content||'').replace(/\s+/g,' ').trim();
+    const dateLabel = n.updatedAt ? new Date(n.updatedAt).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    return `
+      <div class="note-card" onclick="openNoteModal('${n.id}')">
+        <div class="note-card-title">📝 ${n.title||'Sans titre'}</div>
+        <div class="note-card-preview">${preview || 'Note vide…'}</div>
+        <div class="note-card-meta">
+          ${proj?`<span class="badge badge-violet">${proj.icon} ${proj.name}</span>`:`<span class="badge badge-gray">👤 Personnel</span>`}
+          <span class="note-card-time">${dateLabel}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function setNotesProjectFilter(key) { activeNotesProject = key; renderNotes(); }
+
+function openNoteModal(id) {
+  const editing = id ? NOTES.find(n => n.id === id) : null;
+  const myProjects = userNotesProjects();
+  openModal(editing ? 'Modifier la note' : 'Nouvelle note', `
+    <input type="hidden" id="note-edit-id" value="${editing ? editing.id : ''}">
+    <input type="text" class="note-editor-title" id="note-title" placeholder="Titre de la note…" value="${editing ? (editing.title||'') : ''}">
+    <div class="fg"><label>Projet lié</label>
+      <select id="note-project">
+        <option value="">👤 Personnel (aucun projet)</option>
+        ${myProjects.map(p=>`<option value="${p.id}" ${editing && editing.projectId===p.id?'selected':''}>${p.icon} ${p.name}</option>`).join('')}
+      </select>
+    </div>
+    <textarea class="note-editor-body" id="note-body" placeholder="Écrivez votre note ici, comme dans un document Word…">${editing ? (editing.content||'') : ''}</textarea>`,
+    `${editing ? `<button class="btn btn-danger" onclick="deleteNote('${editing.id}')">🗑️ Supprimer</button>` : ''}
+     <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+     <button class="btn btn-primary" onclick="saveNote()">💾 Enregistrer</button>`);
+  document.getElementById('modal').style.maxWidth = '640px';
+}
+
+function saveNote() {
+  const editId = document.getElementById('note-edit-id').value;
+  const title = document.getElementById('note-title').value.trim() || 'Sans titre';
+  const projectId = document.getElementById('note-project').value || null;
+  const content = document.getElementById('note-body').value;
+  if (editId) {
+    const n = NOTES.find(x => x.id === editId);
+    if (!n) return;
+    n.title = title; n.projectId = projectId; n.content = content; n.updatedAt = Date.now();
+    showToast('Note mise à jour', 'ok');
+  } else {
+    NOTES.push({ id:'nt'+noteIdCounter++, userId:CU.id, projectId, title, content, updatedAt: Date.now() });
+    addActivity(CU.id,'a créé la note',`"${title}"`, projectId ? (PROJECTS.find(p=>p.id===projectId)?.name||'') : '');
+    showToast('Note enregistrée', 'ok');
+  }
+  closeModal();
+  refreshAllViews();
+}
+
+function deleteNote(id) {
+  if (!confirm('Supprimer cette note ?')) return;
+  NOTES = NOTES.filter(n => n.id !== id);
+  closeModal();
+  showToast('Note supprimée', 'ok');
+  refreshAllViews();
+}
+
+/* ════════════════════════════════════════════════
    INTERNAL REMARKS (remarques entre utilisateurs)
 ════════════════════════════════════════════════ */
 function renderRemarks() {
@@ -2695,11 +2857,12 @@ function sendRemark() {
   document.getElementById('remark-text').value = '';
   showToast('Remarque envoyée', 'ok');
   renderRemarks();
+  saveState();
 }
 
 function markRemarkRead(id) {
   const r = REMARKS.find(x => x.id === id);
-  if (r) { r.read = true; renderRemarks(); }
+  if (r) { r.read = true; renderRemarks(); saveState(); }
 }
 
 function replyRemark(id) {
@@ -2715,6 +2878,7 @@ function replyRemark(id) {
   addNotif(`${CU.name} a répondu à une remarque`, 'remark');
   showToast('Réponse envoyée', 'ok');
   renderRemarks();
+  saveState();
 }
 
 /* ════════════════════════════════════════════════
@@ -2809,6 +2973,7 @@ function saveMeeting() {
   closeModal();
   showToast('Événement ajouté au calendrier', 'ok');
   renderCalendar();
+  saveState();
 }
 
 /* ════════════════════════════════════════════════
@@ -2830,6 +2995,7 @@ function startTimer(taskId) {
     if (el && t.timerRunning) el.textContent = formatHours(taskTimeSpent(t));
     else clearInterval(timerInterval);
   }, 1000);
+  saveState();
 }
 
 function stopTimer(taskId, silent) {
@@ -2846,6 +3012,7 @@ function stopTimer(taskId, silent) {
     openTaskDetail(taskId);
   }
   if (activeView === 'dashboard') renderDashboard();
+  saveState();
 }
 
 function formatHours(h) {
@@ -2859,7 +3026,7 @@ function formatHours(h) {
 function saveTaskEstimate(taskId) {
   const t = TASKS.find(x => x.id === taskId);
   const val = parseFloat(document.getElementById('tt-estimate-input').value);
-  if (!isNaN(val) && val >= 0) { t.estimate = val; showToast('Estimation mise à jour', 'ok'); }
+  if (!isNaN(val) && val >= 0) { t.estimate = val; showToast('Estimation mise à jour', 'ok'); saveState(); }
 }
 
 /* ════════════════════════════════════════════════
@@ -2885,8 +3052,8 @@ function renderNotifs() {
 }
 function renderNotifDot() { renderNotifs(); }
 
-function markRead(id) { const n = NOTIFICATIONS.find(x=>x.id===id); if(n) n.read=true; renderNotifDot(); }
-function clearNotifs() { NOTIFICATIONS.forEach(n=>n.read=true); renderNotifDot(); }
+function markRead(id) { const n = NOTIFICATIONS.find(x=>x.id===id); if(n) n.read=true; renderNotifDot(); saveState(); }
+function clearNotifs() { NOTIFICATIONS.forEach(n=>n.read=true); renderNotifDot(); saveState(); }
 function toggleNotif() {
   const panel = document.getElementById('notif-panel');
   panel.classList.toggle('open');
@@ -3032,7 +3199,7 @@ function renderProfile() {
         <div style="margin:6px 0"><span class="member-role-badge ${ROLE_BADGE_CLASS[u.role]}">${ROLE_LABELS[u.role]}</span></div>
         <div style="font-size:11.5px;color:var(--text3);margin-bottom:14px">${u.email}</div>
         <label class="btn btn-ghost btn-sm" style="cursor:pointer;width:100%;justify-content:center">📷 Changer la photo
-          <input type="file" accept="image/*" style="display:none" onchange="readImageAsDataUrl(this, url => { CU.photo = url; renderProfile(); bootApp(); showToast('Photo mise à jour','ok'); })">
+          <input type="file" accept="image/*" style="display:none" onchange="readImageAsDataUrl(this, url => { CU.photo = url; renderProfile(); bootApp(); showToast('Photo mise à jour','ok'); saveState(); })">
         </label>
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
           <button class="theme-toggle" style="margin-bottom:0" onclick="toggleTheme()">
@@ -3078,10 +3245,12 @@ function addSkill() {
   CU.skills.push(val);
   input.value = '';
   renderProfile();
+  saveState();
 }
 function removeSkill(i) {
   CU.skills.splice(i,1);
   renderProfile();
+  saveState();
 }
 function saveProfileInfo() {
   const name = document.getElementById('pf-name').value.trim();
@@ -3092,6 +3261,7 @@ function saveProfileInfo() {
   bootApp();
   navigate('profile');
   showToast('Profil mis à jour', 'ok');
+  saveState();
 }
 function changeOwnPassword() {
   const current = document.getElementById('pf-pass-current').value;
@@ -3103,6 +3273,7 @@ function changeOwnPassword() {
   CU.pass = next;
   showToast('Mot de passe mis à jour avec succès', 'ok');
   renderProfile();
+  saveState();
 }
 
 /* ════════════════════════════════════════════════
@@ -3129,6 +3300,97 @@ function showToast(msg, type='ok') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+/* ════════════════════════════════════════════════
+   PERSISTENCE (localStorage) — corrige la réinitialisation
+   des données à chaque fermeture/ouverture de la plateforme.
+════════════════════════════════════════════════ */
+const STORAGE_KEY = 'projeo_data_v1';
+
+function saveState() {
+  try {
+    const state = {
+      USERS, PROJECTS, SPRINTS, TASKS, TODOS, NOTES, REMARKS, MEETINGS, FILES,
+      ACTIVITIES, NOTIFICATIONS,
+      counters: {
+        userIdCounter, taskIdCounter, projIdCounter, sprintIdCounter,
+        todoIdCounter, noteIdCounter, remarkIdCounter, meetingIdCounter, fileIdCounter
+      },
+      sessionUid: CU ? CU.id : null,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) { console.warn('Sauvegarde impossible :', e); }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const state = JSON.parse(raw);
+    if (state.USERS) USERS = state.USERS;
+    if (state.PROJECTS) PROJECTS = state.PROJECTS;
+    if (state.SPRINTS) SPRINTS = state.SPRINTS;
+    if (state.TASKS) TASKS = state.TASKS;
+    if (state.TODOS) TODOS = state.TODOS;
+    if (state.NOTES) NOTES = state.NOTES;
+    if (state.REMARKS) REMARKS = state.REMARKS;
+    if (state.MEETINGS) MEETINGS = state.MEETINGS;
+    if (state.FILES) FILES = state.FILES;
+    if (state.ACTIVITIES) ACTIVITIES = state.ACTIVITIES;
+    if (state.NOTIFICATIONS) NOTIFICATIONS = state.NOTIFICATIONS;
+    if (state.counters) {
+      userIdCounter    = state.counters.userIdCounter    ?? userIdCounter;
+      taskIdCounter    = state.counters.taskIdCounter    ?? taskIdCounter;
+      projIdCounter    = state.counters.projIdCounter    ?? projIdCounter;
+      sprintIdCounter  = state.counters.sprintIdCounter  ?? sprintIdCounter;
+      todoIdCounter    = state.counters.todoIdCounter    ?? todoIdCounter;
+      noteIdCounter    = state.counters.noteIdCounter    ?? noteIdCounter;
+      remarkIdCounter  = state.counters.remarkIdCounter  ?? remarkIdCounter;
+      meetingIdCounter = state.counters.meetingIdCounter ?? meetingIdCounter;
+      fileIdCounter    = state.counters.fileIdCounter    ?? fileIdCounter;
+    }
+    // recalcule les tâches en cours de chronométrage : on ne peut pas garder
+    // un chrono "vivant" entre deux sessions du navigateur, donc on le clôture proprement
+    TASKS.forEach(t => {
+      if (t.timerRunning && t.timerStart) {
+        const durationH = (Date.now() - t.timerStart) / 3600000;
+        t.sessions = t.sessions || [];
+        t.sessions.push({start:t.timerStart, end:Date.now(), durationH:+durationH.toFixed(3)});
+      }
+      t.timerRunning = false;
+      t.timerStart = null;
+    });
+    return state.sessionUid || null;
+  } catch (e) { console.warn('Chargement impossible :', e); return null; }
+}
+
+/* ════════════════════════════════════════════════
+   INITIALISATION FINALE
+   (placée à la toute fin du script pour que toutes les
+   variables let/const ci-dessus soient déjà initialisées)
+════════════════════════════════════════════════ */
+(function initApp() {
+  const sessionUid = loadState();
+
+  // Pré-remplir l'email mémorisé sur l'écran de connexion
+  const remembered = safeGet('sf_remember_email');
+  if (remembered) {
+    document.getElementById('auth-email').value = remembered;
+    document.getElementById('auth-remember').checked = true;
+  }
+
+  // Reconnexion automatique si une session valide était active
+  if (sessionUid) {
+    const user = USERS.find(u => u.id === sessionUid && u.active !== false);
+    if (user) {
+      CU = user;
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      bootApp();
+      return;
+    }
+  }
+})();
 </script>
 </body>
 </html>
