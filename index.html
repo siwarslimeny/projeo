@@ -46,7 +46,7 @@ html[data-theme="light"] {
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:14px;-webkit-font-smoothing:antialiased;transition:background .25s ease,color .25s ease}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;height:calc(var(--vh,1vh) * 100);height:100dvh;overflow:hidden;font-size:14px;-webkit-font-smoothing:antialiased;transition:background .25s ease,color .25s ease}
 *{transition:background-color .2s ease,border-color .2s ease,color .2s ease}
 a{text-decoration:none;color:inherit}
 button{font-family:'Inter',sans-serif;cursor:pointer}
@@ -62,6 +62,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
 ══════════════════════════════════════ */
 #auth-screen{
   position:fixed;inset:0;z-index:9000;
+  height:100vh;height:calc(var(--vh,1vh) * 100);height:100dvh;
   display:flex;background:var(--bg);
   animation:authIn .5s cubic-bezier(.22,1,.36,1);
 }
@@ -168,7 +169,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
 /* ══════════════════════════════════════
    APP LAYOUT
 ══════════════════════════════════════ */
-#app{display:none;height:100vh;flex-direction:row}
+#app{display:none;height:100vh;height:calc(var(--vh,1vh) * 100);height:100dvh;flex-direction:row}
 #app.visible{display:flex}
 
 /* ── SIDEBAR ── */
@@ -177,7 +178,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
   background:var(--surface);
   border-right:1px solid var(--border);
   display:flex;flex-direction:column;
-  height:100vh;overflow:hidden;
+  height:100vh;height:calc(var(--vh,1vh) * 100);height:100dvh;overflow:hidden;
 }
 .sb-brand{
   padding:16px 18px 12px;
@@ -233,7 +234,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
 .btn-logout:hover{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 
 /* ── MAIN ── */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100vh}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100vh;height:calc(var(--vh,1vh) * 100);height:100dvh}
 .topbar{
   height:52px;flex-shrink:0;
   background:var(--surface);border-bottom:1px solid var(--border);
@@ -342,6 +343,8 @@ input,textarea,select{font-family:'Inter',sans-serif}
   background:var(--surface);border:1px solid var(--border);
   border-radius:var(--r2);display:flex;flex-direction:column;
   max-height:calc(100vh - 120px);
+  max-height:calc((var(--vh,1vh) * 100) - 120px);
+  max-height:calc(100dvh - 120px);
 }
 .kanban-col-head{
   padding:12px 14px;border-bottom:1px solid var(--border);
@@ -378,6 +381,10 @@ input,textarea,select{font-family:'Inter',sans-serif}
 .task-card-title{font-size:12.5px;font-weight:600;margin-bottom:7px;line-height:1.4}
 .task-card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
 .task-tag{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.task-card-subtasks{margin-bottom:9px}
+.task-card-subtasks-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.task-card-subtasks-label{font-size:10px;color:var(--text3);font-weight:600;display:flex;align-items:center;gap:4px}
+.task-card-subtasks-count{font-size:10px;color:var(--text3);font-family:var(--mono);font-weight:600}
 .task-card-bottom{display:flex;align-items:center;justify-content:space-between}
 .task-assignee{display:flex;align-items:center;gap:4px}
 .task-avatar{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
@@ -567,6 +574,12 @@ input,textarea,select{font-family:'Inter',sans-serif}
 .toast-info{background:var(--violet)}
 .toast-err{background:var(--red)}
 
+/* ── SEARCH PALETTE ── */
+.search-result-item{display:flex;flex-direction:column;gap:1px;padding:9px 10px;border-radius:var(--r);cursor:pointer;transition:background .12s}
+.search-result-item:hover{background:var(--surface2)}
+.search-group-label{font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 4px;padding:0 2px}
+.search-group-label:first-child{margin-top:0}
+
 /* ── EMPTY STATE ── */
 .empty{text-align:center;padding:50px 20px;color:var(--text3)}
 .empty-icon{font-size:38px;margin-bottom:10px;opacity:.5}
@@ -618,7 +631,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
   font-size:12px;color:transparent;transition:all .15s;
 }
 .todo-check.checked{background:var(--green);border-color:var(--green);color:#fff}
-.todo-body{flex:1;min-width:0}
+.todo-body{flex:1;min-width:0;cursor:pointer}
 .todo-title{font-size:13px;font-weight:600;margin-bottom:3px}
 .todo-item.done .todo-title{text-decoration:line-through;color:var(--text3)}
 .todo-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -907,6 +920,9 @@ input,textarea,select{font-family:'Inter',sans-serif}
         <div class="tb-title" id="tb-title">Tableau de bord</div>
       </div>
       <div class="tb-right">
+        <div class="tb-notif" onclick="openSearchPalette()" id="search-btn" title="Recherche (Ctrl+K)">
+          🔍
+        </div>
         <div class="tb-notif" onclick="toggleNotif()" id="notif-btn">
           🔔 <div class="tb-notif-dot" id="notif-dot"></div>
         </div>
@@ -986,6 +1002,19 @@ input,textarea,select{font-family:'Inter',sans-serif}
             <div class="page-header-sub" id="kanban-project-name">Sélectionnez un projet</div>
           </div>
           <select id="kanban-project-select" style="padding:7px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:12.5px;outline:none" onchange="loadKanban()"></select>
+        </div>
+        <div style="display:flex;gap:8px;padding:12px 20px 0;flex-wrap:wrap" id="kanban-filters">
+          <input type="text" id="kb-filter-text" placeholder="🔍 Rechercher une tâche…" oninput="loadKanban()" style="flex:1;min-width:160px;padding:8px 11px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:12.5px;outline:none">
+          <select id="kb-filter-priority" onchange="loadKanban()" style="padding:8px 10px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:12.5px;outline:none">
+            <option value="">Toutes priorités</option>
+            <option value="high">🔴 Haute</option>
+            <option value="medium">🟡 Moyenne</option>
+            <option value="low">🟢 Faible</option>
+          </select>
+          <select id="kb-filter-assignee" onchange="loadKanban()" style="padding:8px 10px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:12.5px;outline:none;display:none">
+            <option value="">Tous les membres</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" style="padding:8px 12px;font-size:12px" onclick="resetKanbanFilters()">✕ Réinitialiser</button>
         </div>
         <div class="kanban-wrap" id="kanban-board"></div>
       </div>
@@ -1176,6 +1205,26 @@ input,textarea,select{font-family:'Inter',sans-serif}
 
 <script>
 /* ════════════════════════════════════════════════
+   FIX — hauteur d'écran fiable (corrige le bug d'affichage
+   "coupé en deux" / non visible jusqu'en bas) :
+   sur mobile (barre d'adresse dynamique) ou dans une fenêtre
+   d'aperçu, la valeur CSS "100vh" ne correspond pas toujours
+   à la hauteur réellement visible. On calcule donc la vraie
+   hauteur via JS et on l'expose comme variable CSS --vh,
+   utilisée en repli partout où "100vh" est utilisé.
+════════════════════════════════════════════════ */
+function setRealViewportHeight() {
+  const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+setRealViewportHeight();
+window.addEventListener('resize', setRealViewportHeight);
+window.addEventListener('orientationchange', setRealViewportHeight);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', setRealViewportHeight);
+}
+
+/* ════════════════════════════════════════════════
    DATA STORE
 ════════════════════════════════════════════════ */
 const ROLE_LABELS = {ADMIN:'Administrateur',CHEF:'Chef de projet',DEV:'Développeur',DESIGNER:'Designer',TESTER:'Testeur',MEMBER:'Membre'};
@@ -1193,7 +1242,6 @@ let PROJECTS = [
   {id:'p3',name:'Dashboard Analytics',desc:'Tableau de bord analytique pour la direction',icon:'📊',color:'#F59E0B',status:'planned',members:['u1','u2']},
 ];
 
-/* Choix d'icônes et de couleurs (thème) réutilisés pour les projets ET les sprints */
 const PROJECT_ICON_CHOICES = [
   {v:'📱',label:'Mobile'},{v:'🌐',label:'Web'},{v:'🛒',label:'E-Commerce'},
   {v:'📊',label:'Analytics'},{v:'🔒',label:'Sécurité'},{v:'🤖',label:'IA / ML'},
@@ -1223,8 +1271,6 @@ let SPRINTS = [
   {id:'s10',projectId:'p3',number:3,name:'Sprint 3',goal:"Refonte de l'expérience utilisateur",start:'2024-02-02',end:'2024-02-16',status:'planned',velocity:0,icon:'🌊',color:'#3B82F6'},
 ];
 
-/* Progression de projet — calculée automatiquement, jamais stockée en dur.
-   Combine les tâches Kanban ET les tâches de la To-Do List liées au projet. */
 function computeProjectProgress(pid) {
   const tasks = TASKS.filter(t => t.projectId === pid);
   const todos = TODOS.filter(t => t.projectId === pid);
@@ -1234,7 +1280,6 @@ function computeProjectProgress(pid) {
   return Math.round((done / total) * 100);
 }
 
-/* Sprint courant d'un projet — calculé dynamiquement (actif, sinon prochain planifié) */
 function currentProjectSprint(pid) {
   const sprints = SPRINTS.filter(s => s.projectId === pid);
   const active = sprints.find(s => s.status === 'active');
@@ -1257,13 +1302,13 @@ let TASKS = [
   {id:'t10',projectId:'p1',sprintId:'s1',title:'Gestion des stocks',desc:'Indicateur de disponibilité en temps réel',status:'backlog',priority:'medium',assignee:'u2',due:'2024-01-30',tags:['Backend'],comments:[]},
 ];
 
-// Init time-tracking defaults on every task
 const DEFAULT_ESTIMATES = {t1:8,t2:4,t3:5,t4:6,t5:4,t6:3,t7:5,t8:7,t9:4,t10:3};
 TASKS.forEach(t => {
   if (t.estimate === undefined) t.estimate = DEFAULT_ESTIMATES[t.id] || 4;
   if (t.sessions === undefined) t.sessions = t.status === 'done' ? [{start:null,end:null,durationH:+(t.estimate * (0.7+Math.random()*0.5)).toFixed(1)}] : [];
   if (t.timerRunning === undefined) t.timerRunning = false;
   if (t.timerStart === undefined) t.timerStart = null;
+  if (t.subtasks === undefined) t.subtasks = [];
 });
 function taskTimeSpent(t) {
   let h = t.sessions.reduce((sum,s) => sum + (s.durationH||0), 0);
@@ -1336,7 +1381,7 @@ let ACTIVITIES = [
 /* ════════════════════════════════════════════════
    STATE
 ════════════════════════════════════════════════ */
-let CU = null; // current user
+let CU = null;
 let activeView = 'dashboard';
 let selectedProject = 'p1';
 let taskIdCounter = 11;
@@ -1358,7 +1403,6 @@ function toggleAuthPass() {
   btn.textContent = show ? '🙈' : '👁';
 }
 
-/* Safe wrappers: storage may be unavailable (e.g. sandboxed preview) */
 function safeGet(key) { try { return localStorage.getItem(key); } catch(e) { return null; } }
 function safeSet(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
 function safeRemove(key) { try { localStorage.removeItem(key); } catch(e) {} }
@@ -1464,7 +1508,7 @@ function bootApp() {
 }
 
 /* ════════════════════════════════════════════════
-   DEADLINE REMINDERS (échéance proche)
+   DEADLINE REMINDERS
 ════════════════════════════════════════════════ */
 let remindedTaskIds = new Set();
 function checkDeadlineReminders() {
@@ -1512,8 +1556,6 @@ function navigate(view) {
   closeSidebarOnMobile();
 }
 
-/* Rafraîchit en temps réel toutes les vues dont les données peuvent avoir changé
-   (Projets ↔ Sprints ↔ Tâches ↔ To-Do List ↔ Team Files ↔ Statistiques sont liés) */
 function refreshAllViews() {
   renderSbProjects();
   if (activeView === 'dashboard') renderDashboard();
@@ -1615,7 +1657,6 @@ function renderDashboard() {
       <div class="prog-bar" style="margin-top:6px"><div class="prog-fill" style="width:${globalProgress}%;background:var(--violet)"></div></div>
     </div>`;
 
-  // Activity
   document.getElementById('activity-list').innerHTML = ACTIVITIES.slice(0,5).map(a => {
     const u = USERS.find(x => x.id === a.user);
     if (!u) return '';
@@ -1628,7 +1669,6 @@ function renderDashboard() {
     </div>`;
   }).join('') || '<p style="font-size:12px;color:var(--text3);padding:8px 0">Aucune activité récente</p>';
 
-  // Sprint overview
   const sprintOverviewEl = document.getElementById('sprint-overview');
   if (activeSprintObj) {
     const sprintTasks = TASKS.filter(t => t.sprintId === activeSprintObj.id);
@@ -1654,7 +1694,6 @@ function renderDashboard() {
     sprintOverviewEl.innerHTML = `<div class="empty" style="padding:20px"><p>Aucun sprint actif</p></div>`;
   }
 
-  // Time tracking summary
   const tasksWithTime = myTasks.filter(t => taskTimeSpent(t) > 0 || t.estimate);
   document.getElementById('dash-time-tracking').innerHTML = `
     <div style="display:flex;justify-content:space-around;margin-bottom:12px">
@@ -1668,7 +1707,6 @@ function renderDashboard() {
         <span style="color:${taskTimeSpent(t)>t.estimate?'var(--red)':'var(--text2)'}">${formatHours(taskTimeSpent(t))} / ${t.estimate}h</span>
       </div>`).join('') || '<p style="font-size:12px;color:var(--text3);padding:8px 0">Aucun suivi de temps encore</p>'}`;
 
-  // Remarks received
   const receivedRemarks = REMARKS.filter(r => r.to === CU.id).sort((a,b)=>b.id.localeCompare(a.id)).slice(0,4);
   document.getElementById('dash-remarks-received').innerHTML = receivedRemarks.length ? receivedRemarks.map(r => {
     const from = USERS.find(u=>u.id===r.from);
@@ -1681,7 +1719,6 @@ function renderDashboard() {
     </div>`;
   }).join('') : '<p style="font-size:12px;color:var(--text3);padding:8px 0">Aucune remarque reçue</p>';
 
-  // My tasks
   const myT = TASKS.filter(t => t.assignee === CU.id).slice(0, 5);
   document.getElementById('my-tasks-count').textContent = `${myT.length} tâches`;
   if (myT.length === 0) {
@@ -1723,7 +1760,6 @@ const COLS = [
 ];
 
 function renderKanban() {
-  // populate project select
   const sel = document.getElementById('kanban-project-select');
   const userProjects = PROJECTS.filter(p => p.members.includes(CU.id) || CU.role === 'ADMIN');
   sel.innerHTML = userProjects.map(p => `<option value="${p.id}" ${p.id===selectedProject?'selected':''}>${p.name}</option>`).join('');
@@ -1736,12 +1772,32 @@ function loadKanban() {
   const proj = PROJECTS.find(p => p.id === pid);
   document.getElementById('kanban-project-name').textContent = proj ? proj.name : '';
   const board = document.getElementById('kanban-board');
-  /* Un membre non-admin (Dev, Designer, Testeur…) ne voit dans le Kanban que
-     ses propres tâches assignées. L'administrateur voit toutes les tâches
-     de tous les membres du projet. */
   const isAdmin = CU.role === 'ADMIN';
+
+  // ── Filtres (recherche texte, priorité, assigné) ──
+  const assigneeSel = document.getElementById('kb-filter-assignee');
+  if (isAdmin) {
+    assigneeSel.style.display = '';
+    if (!assigneeSel.dataset.filled || assigneeSel.dataset.filledFor !== pid) {
+      const projMembers = proj ? USERS.filter(u => proj.members.includes(u.id)) : USERS;
+      const current = assigneeSel.value;
+      assigneeSel.innerHTML = '<option value="">Tous les membres</option>' + projMembers.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+      assigneeSel.value = current;
+      assigneeSel.dataset.filled = '1';
+      assigneeSel.dataset.filledFor = pid;
+    }
+  } else {
+    assigneeSel.style.display = 'none';
+  }
+  const filterText = (document.getElementById('kb-filter-text').value || '').trim().toLowerCase();
+  const filterPriority = document.getElementById('kb-filter-priority').value;
+  const filterAssignee = isAdmin ? assigneeSel.value : '';
+
   board.innerHTML = COLS.map(col => {
-    const colTasks = TASKS.filter(t => t.projectId === pid && t.status === col.id && (isAdmin || t.assignee === CU.id));
+    let colTasks = TASKS.filter(t => t.projectId === pid && t.status === col.id && (isAdmin || t.assignee === CU.id));
+    if (filterText) colTasks = colTasks.filter(t => t.title.toLowerCase().includes(filterText) || (t.desc||'').toLowerCase().includes(filterText));
+    if (filterPriority) colTasks = colTasks.filter(t => t.priority === filterPriority);
+    if (filterAssignee) colTasks = colTasks.filter(t => t.assignee === filterAssignee);
     return `
       <div class="kanban-col" id="col-${col.id}" ondragover="event.preventDefault()" ondrop="dropTask(event,'${col.id}')">
         <div class="kanban-col-head">
@@ -1752,7 +1808,7 @@ function loadKanban() {
           <span class="kanban-col-count" style="background:${col.countBg};color:${col.countColor}">${colTasks.length}</span>
         </div>
         <div class="kanban-col-body" id="colbody-${col.id}">
-          ${colTasks.map(t => renderTaskCard(t)).join('')}
+          ${colTasks.map(t => renderTaskCard(t)).join('') || (filterText||filterPriority||filterAssignee ? '<p style="font-size:11.5px;color:var(--text3);text-align:center;padding:16px 4px">Aucun résultat</p>' : '')}
         </div>
         <button class="kanban-add-btn" onclick="openTaskModal('${col.id}')">＋ Ajouter une tâche</button>
       </div>`;
@@ -1760,16 +1816,39 @@ function loadKanban() {
   renderSbProjects();
 }
 
+function resetKanbanFilters() {
+  document.getElementById('kb-filter-text').value = '';
+  document.getElementById('kb-filter-priority').value = '';
+  const assigneeSel = document.getElementById('kb-filter-assignee');
+  if (assigneeSel) assigneeSel.value = '';
+  loadKanban();
+}
+
 function renderTaskCard(t) {
   const assignee = USERS.find(u => u.id === t.assignee);
   const tagColors = {'Backend':'var(--violet-bg)','Frontend':'var(--blue-bg)','Design':'var(--amber-bg)','API':'var(--green-bg)','Tests':'var(--red-bg)','Mobile':'var(--cyan)','Performance':'var(--surface3)','Sécurité':'var(--red-bg)','Auth':'var(--violet-bg)','UI':'var(--blue-bg)'};
   const tagText = {'Backend':'var(--violet2)','Frontend':'var(--blue)','Design':'var(--amber)','API':'var(--green)','Tests':'var(--red)','Mobile':'#0e7490','Performance':'var(--text3)','Sécurité':'var(--red)','Auth':'var(--violet2)','UI':'var(--blue)'};
+  const subtasks = t.subtasks || [];
+  const subTotal = subtasks.length;
+  const subDone = subtasks.filter(s=>s.done).length;
+  const subAllDone = subTotal > 0 && subDone === subTotal;
+  const subPct = subTotal ? Math.round((subDone/subTotal)*100) : 0;
   return `
     <div class="task-card p-${t.priority}" draggable="true" ondragstart="dragTask(event,'${t.id}')" onclick="openTaskDetail('${t.id}')">
       <div class="task-card-title">${t.title}</div>
       <div class="task-card-tags">
         ${t.tags.map(tag=>`<span class="task-tag" style="background:${tagColors[tag]||'var(--surface3)'};color:${tagText[tag]||'var(--text3)'}">${tag}</span>`).join('')}
       </div>
+      ${subTotal ? `
+      <div class="task-card-subtasks">
+        <div class="task-card-subtasks-head">
+          <span class="task-card-subtasks-label">☑ Sous-tâches</span>
+          <span class="task-card-subtasks-count" style="color:${subAllDone?'var(--green)':'var(--text3)'}">${subDone}/${subTotal}</span>
+        </div>
+        <div class="prog-bar" style="margin:0;height:4px">
+          <div class="prog-fill" style="width:${subPct}%;background:${subAllDone?'var(--green)':'var(--violet)'}"></div>
+        </div>
+      </div>` : ''}
       <div class="task-card-bottom">
         <div class="task-assignee">
           ${assignee?`<div class="task-avatar" style="background:${assignee.colorBg};color:${assignee.color}">${assignee.initials}</div>
@@ -1787,7 +1866,6 @@ function isPastDue(due) {
   return new Date(due) < new Date() && due;
 }
 
-/* Drag & Drop */
 let draggedTaskId = null;
 function dragTask(e, id) { draggedTaskId = id; e.dataTransfer.effectAllowed = 'move'; }
 function dropTask(e, newStatus) {
@@ -2040,6 +2118,8 @@ function deleteMember(id) {
   if (!confirm('Supprimer définitivement ce compte ?')) return;
   USERS = USERS.filter(u => u.id !== id);
   PROJECTS.forEach(p => p.members = p.members.filter(m => m !== id));
+  TASKS.forEach(t => { if (t.assignee === id) t.assignee = null; });
+  TODOS = TODOS.filter(t => t.userId !== id);
   closeModal();
   showToast('Compte supprimé', 'ok');
   renderMembers();
@@ -2093,10 +2173,7 @@ function saveMember() {
 }
 
 /* ════════════════════════════════════════════════
-   TASK MODAL (création ET modification)
-   — La tâche est désormais toujours assignée automatiquement
-     à son créateur (plus de champ "Assigné à" à la création).
-     La réassignation reste possible depuis le détail de la tâche.
+   TASK MODAL
 ════════════════════════════════════════════════ */
 function openTaskModal(defaultStatus, editId) {
   const editing = editId ? TASKS.find(t => t.id === editId) : null;
@@ -2176,7 +2253,6 @@ function saveTask(pid) {
   const estimate = parseFloat(document.getElementById('task-estimate').value) || 4;
 
   if (editId) {
-    // ── MODIFICATION D'UNE TÂCHE EXISTANTE ──
     const t = TASKS.find(x => x.id === editId);
     if (!t) return;
     t.title = title; t.desc = desc; t.status = status; t.priority = priority;
@@ -2185,7 +2261,6 @@ function saveTask(pid) {
     closeModal();
     showToast('Tâche mise à jour', 'ok');
   } else {
-    // ── CRÉATION — assignation automatique au créateur ──
     const newTask = {
       id: 't' + taskIdCounter++,
       projectId: pid,
@@ -2199,6 +2274,7 @@ function saveTask(pid) {
       sessions: [],
       timerRunning: false,
       timerStart: null,
+      subtasks: [],
     };
     TASKS.push(newTask);
     addActivity(CU.id,'a créé la tâche',`"${title}"`,PROJECTS.find(p=>p.id===pid)?.name||'');
@@ -2209,7 +2285,6 @@ function saveTask(pid) {
   refreshAllViews();
 }
 
-/* Ouvre le formulaire d'édition complet d'une tâche depuis son détail */
 function editTaskDetails(id) {
   openTaskModal(null, id);
 }
@@ -2217,6 +2292,8 @@ function editTaskDetails(id) {
 /* ════════════════════════════════════════════════
    TASK DETAIL
 ════════════════════════════════════════════════ */
+let editingSubtaskId = null;
+
 function openTaskDetail(id) {
   const t = TASKS.find(x => x.id === id);
   if (!t) return;
@@ -2226,6 +2303,8 @@ function openTaskDetail(id) {
   const prioMap = {high:'🔴 Haute',medium:'🟡 Moyenne',low:'🟢 Faible'};
   const statusMap = {backlog:'Backlog',todo:'À faire',inprogress:'En cours',done:'Terminé'};
   const projMembers = proj ? USERS.filter(u => proj.members.includes(u.id)) : USERS;
+  const subDoneCount = t.subtasks.filter(s=>s.done).length;
+  const subTotalCount = t.subtasks.length;
 
   openModal(t.title, `
     <div class="task-detail-grid">
@@ -2240,6 +2319,29 @@ function openTaskDetail(id) {
             ${['backlog','todo','inprogress','done'].map(s=>`
               <button class="btn btn-sm ${t.status===s?'btn-primary':'btn-ghost'}" onclick="changeStatus('${id}','${s}')">${statusMap[s]}</button>
             `).join('')}
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Sous-tâches (${subDoneCount}/${subTotalCount})</h4>
+          ${subTotalCount ? `<div class="prog-bar" style="margin-bottom:8px"><div class="prog-fill" style="width:${Math.round((subDoneCount/subTotalCount)*100)}%;background:${subDoneCount===subTotalCount?'var(--green)':'var(--violet)'}"></div></div>` : ''}
+          <div id="subtasks-${id}">
+            ${t.subtasks.map(st => editingSubtaskId===st.id ? `
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+                <input type="text" id="subtask-edit-input-${st.id}" value="${String(st.text).replace(/"/g,'&quot;')}" style="flex:1;padding:6px 9px;background:var(--surface3);border:1.5px solid var(--violet);border-radius:var(--r);color:var(--text);font-size:12.5px;outline:none" onkeydown="if(event.key==='Enter'){event.preventDefault();saveEditSubtask('${id}','${st.id}');}if(event.key==='Escape')cancelEditSubtask('${id}')">
+                <button class="todo-icon-btn" style="width:22px;height:22px;color:var(--green)" onclick="saveEditSubtask('${id}','${st.id}')" title="Enregistrer">✓</button>
+                <button class="todo-icon-btn" style="width:22px;height:22px" onclick="cancelEditSubtask('${id}')" title="Annuler">✕</button>
+              </div>
+            ` : `
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+                <div class="todo-check ${st.done?'checked':''}" style="width:17px;height:17px;flex-shrink:0" onclick="toggleSubtask('${id}','${st.id}')">${st.done?'✓':''}</div>
+                <span style="flex:1;font-size:12.5px;${st.done?'text-decoration:line-through;color:var(--text3)':''}">${st.text}</span>
+                <button class="todo-icon-btn" style="width:22px;height:22px" onclick="startEditSubtask('${id}','${st.id}')" title="Modifier">✎</button>
+                <button class="todo-icon-btn danger" style="width:22px;height:22px" onclick="deleteSubtask('${id}','${st.id}')" title="Supprimer">🗑️</button>
+              </div>`).join('') || '<p style="font-size:12px;color:var(--text3);padding:4px 0">Aucune sous-tâche.</p>'}
+          </div>
+          <div class="comment-input-row">
+            <input class="comment-input" id="subtask-input-${id}" placeholder="Ajouter une sous-tâche…" onkeydown="if(event.key==='Enter')addSubtask('${id}')">
+            <button class="btn btn-primary" style="padding:7px 12px;font-size:12px" onclick="addSubtask('${id}')">＋</button>
           </div>
         </div>
         <div class="detail-section">
@@ -2374,6 +2476,65 @@ function addComment(taskId) {
   }).join('');
   showToast('Commentaire ajouté', 'ok');
   saveState();
+}
+
+/* ════════════════════════════════════════════════
+   SOUS-TÂCHES (checklist) — Ajout / bascule / édition / suppression
+════════════════════════════════════════════════ */
+function addSubtask(taskId) {
+  const input = document.getElementById(`subtask-input-${taskId}`);
+  const text = input.value.trim();
+  if (!text) return;
+  const t = TASKS.find(x => x.id === taskId);
+  t.subtasks = t.subtasks || [];
+  t.subtasks.push({id:'st'+Date.now()+Math.random().toString(36).slice(2,5), text, done:false});
+  input.value = '';
+  openTaskDetail(taskId);
+  refreshAllViews();
+}
+
+function toggleSubtask(taskId, stId) {
+  const t = TASKS.find(x => x.id === taskId);
+  const st = t.subtasks.find(s => s.id === stId);
+  if (!st) return;
+  st.done = !st.done;
+  openTaskDetail(taskId);
+  refreshAllViews();
+}
+
+function startEditSubtask(taskId, stId) {
+  editingSubtaskId = stId;
+  openTaskDetail(taskId);
+  setTimeout(() => {
+    const input = document.getElementById(`subtask-edit-input-${stId}`);
+    if (input) { input.focus(); input.select(); }
+  }, 50);
+}
+
+function cancelEditSubtask(taskId) {
+  editingSubtaskId = null;
+  openTaskDetail(taskId);
+}
+
+function saveEditSubtask(taskId, stId) {
+  const input = document.getElementById(`subtask-edit-input-${stId}`);
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) { showToast('Le texte de la sous-tâche ne peut pas être vide', 'err'); return; }
+  const t = TASKS.find(x => x.id === taskId);
+  const st = t.subtasks.find(s => s.id === stId);
+  if (st) st.text = val;
+  editingSubtaskId = null;
+  openTaskDetail(taskId);
+  refreshAllViews();
+}
+
+function deleteSubtask(taskId, stId) {
+  const t = TASKS.find(x => x.id === taskId);
+  t.subtasks = t.subtasks.filter(s => s.id !== stId);
+  if (editingSubtaskId === stId) editingSubtaskId = null;
+  openTaskDetail(taskId);
+  refreshAllViews();
 }
 
 /* ════════════════════════════════════════════════
@@ -2522,8 +2683,6 @@ function openSprintModal(id) {
   updateSprintNumberOptions(editing ? editing.number : null);
 }
 
-/* Génère automatiquement la liste des numéros de sprint disponibles pour le projet
-   sélectionné — l'utilisateur choisit juste un numéro, le nom "Sprint N" est auto-généré. */
 function updateSprintNumberOptions(preselect) {
   const projectId = document.getElementById('sprint-proj').value;
   const editId = document.getElementById('sprint-edit-id').value;
@@ -2580,9 +2739,10 @@ function deleteSprint(id) {
 }
 
 /* ════════════════════════════════════════════════
-   PERSONAL TO-DO LIST (privée par utilisateur)
+   PERSONAL TO-DO LIST
 ════════════════════════════════════════════════ */
 let activeTodoProject = 'all';
+let editingTodoSubtaskId = null;
 
 function userTodoProjects() {
   return PROJECTS.filter(p => p.members.includes(CU.id) || CU.role === 'ADMIN');
@@ -2592,18 +2752,15 @@ function renderTodos() {
   const myProjects = userTodoProjects();
   const allMine = TODOS.filter(t => t.userId === CU.id);
 
-  // reset le filtre si le projet sélectionné n'est plus accessible
   if (activeTodoProject !== 'all' && activeTodoProject !== 'personal' && !myProjects.some(p=>p.id===activeTodoProject)) {
     activeTodoProject = 'all';
   }
 
-  // Onglets = "Toutes" + "Personnel" + une liste par projet accessible
   const tabsHtml = [`<div class="files-tab ${activeTodoProject==='all'?'active':''}" onclick="setTodoProjectFilter('all')">Toutes <span style="opacity:.7">(${allMine.length})</span></div>`,
     `<div class="files-tab ${activeTodoProject==='personal'?'active':''}" onclick="setTodoProjectFilter('personal')">👤 Personnel <span style="opacity:.7">(${allMine.filter(t=>!t.projectId).length})</span></div>`]
     .concat(myProjects.map(p => `<div class="files-tab ${activeTodoProject===p.id?'active':''}" onclick="setTodoProjectFilter('${p.id}')">${p.icon} ${p.name} <span style="opacity:.7">(${allMine.filter(t=>t.projectId===p.id).length})</span></div>`));
   document.getElementById('todo-tabs').innerHTML = tabsHtml.join('');
 
-  // Sélecteur de projet dans la barre d'ajout
   document.getElementById('todo-new-project').innerHTML = `<option value="">👤 Personnel (aucun projet)</option>` +
     myProjects.map(p=>`<option value="${p.id}" ${activeTodoProject===p.id?'selected':''}>${p.icon} ${p.name}</option>`).join('');
 
@@ -2619,20 +2776,24 @@ function renderTodos() {
   const prioLabel = {high:'Haute',medium:'Moyenne',low:'Faible'};
   list.innerHTML = mine.map(t => {
     const proj = t.projectId ? PROJECTS.find(p=>p.id===t.projectId) : null;
+    const subtasks = t.subtasks || [];
+    const subDone = subtasks.filter(s=>s.done).length;
     return `
     <div class="todo-item ${t.done?'done':''}">
       <div class="todo-check ${t.done?'checked':''}" onclick="toggleTodo('${t.id}')">${t.done?'✓':''}</div>
-      <div class="todo-body">
+      <div class="todo-body" onclick="openTodoDetail('${t.id}')">
         <div class="todo-title">${t.title}</div>
         <div class="todo-meta">
           <span class="task-priority ${prioMap[t.priority]}">${prioLabel[t.priority]}</span>
           ${proj?`<span class="badge badge-violet">${proj.icon} ${proj.name}</span>`:`<span class="badge badge-gray">👤 Personnel</span>`}
           ${t.due?`<span class="todo-due ${!t.done && isPastDue(t.due)?'overdue':''}">📅 ${t.due}</span>`:''}
+          ${subtasks.length?`<span style="font-size:10.5px;color:${subDone===subtasks.length?'var(--green)':'var(--text3)'};font-family:var(--mono)">☑ ${subDone}/${subtasks.length}</span>`:''}
         </div>
       </div>
       <div class="todo-actions">
-        <button class="todo-icon-btn" onclick="editTodo('${t.id}')" title="Modifier">✎</button>
-        <button class="todo-icon-btn danger" onclick="deleteTodo('${t.id}')" title="Supprimer">🗑️</button>
+        <button class="todo-icon-btn" onclick="event.stopPropagation();openTodoDetail('${t.id}')" title="Voir">👁️</button>
+        <button class="todo-icon-btn" onclick="event.stopPropagation();editTodo('${t.id}')" title="Modifier">✎</button>
+        <button class="todo-icon-btn danger" onclick="event.stopPropagation();deleteTodo('${t.id}')" title="Supprimer">🗑️</button>
       </div>
     </div>`;
   }).join('');
@@ -2653,6 +2814,7 @@ function addTodo() {
     priority: document.getElementById('todo-new-priority').value,
     due: document.getElementById('todo-new-due').value,
     done: false,
+    subtasks: [],
   });
   input.value = '';
   document.getElementById('todo-new-due').value = '';
@@ -2663,6 +2825,128 @@ function addTodo() {
 function toggleTodo(id) {
   const t = TODOS.find(x => x.id === id);
   if (t) { t.done = !t.done; refreshAllViews(); }
+}
+
+/* ── Détail d'une tâche de la to-do list ── */
+function openTodoDetail(id) {
+  const t = TODOS.find(x => x.id === id);
+  if (!t) return;
+  t.subtasks = t.subtasks || [];
+  const proj = t.projectId ? PROJECTS.find(p=>p.id===t.projectId) : null;
+  const prioMap = {high:'🔴 Haute',medium:'🟡 Moyenne',low:'🟢 Faible'};
+  const subDone = t.subtasks.filter(s=>s.done).length;
+
+  openModal(t.title, `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="badge badge-violet">${prioMap[t.priority]}</span>
+      ${proj?`<span class="badge badge-blue">${proj.icon} ${proj.name}</span>`:`<span class="badge badge-gray">👤 Personnel</span>`}
+      <span class="badge ${t.done?'badge-green':'badge-amber'}">${t.done?'Terminée':'En cours'}</span>
+      ${t.due?`<span class="badge badge-gray">📅 ${t.due}</span>`:''}
+    </div>
+
+    <div class="detail-section">
+      <h4>Statut</h4>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-sm ${!t.done?'btn-primary':'btn-ghost'}" onclick="setTodoDone('${id}',false)">À faire</button>
+        <button class="btn btn-sm ${t.done?'btn-primary':'btn-ghost'}" onclick="setTodoDone('${id}',true)">✓ Terminée</button>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Sous-tâches (${subDone}/${t.subtasks.length})</h4>
+      ${t.subtasks.length ? `<div class="prog-bar" style="margin-bottom:8px"><div class="prog-fill" style="width:${Math.round((subDone/t.subtasks.length)*100)}%;background:${subDone===t.subtasks.length?'var(--green)':'var(--violet)'}"></div></div>` : ''}
+      <div id="todo-subtasks-${id}">
+        ${t.subtasks.map(st => editingTodoSubtaskId===st.id ? `
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+            <input type="text" id="todo-subtask-edit-input-${st.id}" value="${String(st.text).replace(/"/g,'&quot;')}" style="flex:1;padding:6px 9px;background:var(--surface3);border:1.5px solid var(--violet);border-radius:var(--r);color:var(--text);font-size:12.5px;outline:none" onkeydown="if(event.key==='Enter'){event.preventDefault();saveEditTodoSubtask('${id}','${st.id}');}if(event.key==='Escape')cancelEditTodoSubtask('${id}')">
+            <button class="todo-icon-btn" style="width:22px;height:22px;color:var(--green)" onclick="saveEditTodoSubtask('${id}','${st.id}')" title="Enregistrer">✓</button>
+            <button class="todo-icon-btn" style="width:22px;height:22px" onclick="cancelEditTodoSubtask('${id}')" title="Annuler">✕</button>
+          </div>
+        ` : `
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+            <div class="todo-check ${st.done?'checked':''}" style="width:17px;height:17px;flex-shrink:0" onclick="toggleTodoSubtask('${id}','${st.id}')">${st.done?'✓':''}</div>
+            <span style="flex:1;font-size:12.5px;${st.done?'text-decoration:line-through;color:var(--text3)':''}">${st.text}</span>
+            <button class="todo-icon-btn" style="width:22px;height:22px" onclick="startEditTodoSubtask('${id}','${st.id}')" title="Modifier">✎</button>
+            <button class="todo-icon-btn danger" style="width:22px;height:22px" onclick="deleteTodoSubtask('${id}','${st.id}')" title="Supprimer">🗑️</button>
+          </div>`).join('') || '<p style="font-size:12px;color:var(--text3);padding:4px 0">Aucune sous-tâche.</p>'}
+      </div>
+      <div class="comment-input-row">
+        <input class="comment-input" id="todo-subtask-input-${id}" placeholder="Ajouter une sous-tâche…" onkeydown="if(event.key==='Enter')addTodoSubtask('${id}')">
+        <button class="btn btn-primary" style="padding:7px 12px;font-size:12px" onclick="addTodoSubtask('${id}')">＋</button>
+      </div>
+    </div>`,
+    `<button class="btn btn-danger" onclick="deleteTodo('${id}')">🗑️ Supprimer</button>
+     <button class="btn btn-ghost" onclick="closeModal();editTodo('${id}')">✎ Modifier</button>
+     <button class="btn btn-ghost" onclick="closeModal()">Fermer</button>`);
+  document.getElementById('modal').style.maxWidth = '560px';
+}
+
+function setTodoDone(id, done) {
+  const t = TODOS.find(x => x.id === id);
+  if (!t) return;
+  t.done = done;
+  openTodoDetail(id);
+  refreshAllViews();
+}
+
+function addTodoSubtask(todoId) {
+  const input = document.getElementById(`todo-subtask-input-${todoId}`);
+  const text = input.value.trim();
+  if (!text) return;
+  const t = TODOS.find(x => x.id === todoId);
+  if (!t) return;
+  t.subtasks = t.subtasks || [];
+  t.subtasks.push({id:'tst'+Date.now()+Math.random().toString(36).slice(2,5), text, done:false});
+  input.value = '';
+  openTodoDetail(todoId);
+  refreshAllViews();
+}
+
+function toggleTodoSubtask(todoId, stId) {
+  const t = TODOS.find(x => x.id === todoId);
+  if (!t) return;
+  const st = (t.subtasks||[]).find(s => s.id === stId);
+  if (!st) return;
+  st.done = !st.done;
+  openTodoDetail(todoId);
+  refreshAllViews();
+}
+
+function startEditTodoSubtask(todoId, stId) {
+  editingTodoSubtaskId = stId;
+  openTodoDetail(todoId);
+  setTimeout(() => {
+    const input = document.getElementById(`todo-subtask-edit-input-${stId}`);
+    if (input) { input.focus(); input.select(); }
+  }, 50);
+}
+
+function cancelEditTodoSubtask(todoId) {
+  editingTodoSubtaskId = null;
+  openTodoDetail(todoId);
+}
+
+function saveEditTodoSubtask(todoId, stId) {
+  const input = document.getElementById(`todo-subtask-edit-input-${stId}`);
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) { showToast('Le texte de la sous-tâche ne peut pas être vide', 'err'); return; }
+  const t = TODOS.find(x => x.id === todoId);
+  if (!t) return;
+  const st = (t.subtasks||[]).find(s => s.id === stId);
+  if (st) st.text = val;
+  editingTodoSubtaskId = null;
+  openTodoDetail(todoId);
+  refreshAllViews();
+}
+
+function deleteTodoSubtask(todoId, stId) {
+  const t = TODOS.find(x => x.id === todoId);
+  if (!t) return;
+  t.subtasks = (t.subtasks||[]).filter(s => s.id !== stId);
+  if (editingTodoSubtaskId === stId) editingTodoSubtaskId = null;
+  openTodoDetail(todoId);
+  refreshAllViews();
 }
 
 function editTodo(id) {
@@ -2687,7 +2971,8 @@ function editTodo(id) {
       </div>
       <div class="fg"><label>Date limite</label><input type="date" id="edit-todo-due" value="${t.due||''}"></div>
     </div>`,
-    `<button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+    `<button class="btn btn-danger" onclick="deleteTodo('${id}')">🗑️ Supprimer</button>
+     <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
      <button class="btn btn-primary" onclick="saveTodoEdit('${id}')">Enregistrer</button>`);
 }
 
@@ -2706,13 +2991,15 @@ function saveTodoEdit(id) {
 }
 
 function deleteTodo(id) {
+  if (!confirm('Supprimer cette tâche et toutes ses sous-tâches ?')) return;
   TODOS = TODOS.filter(x => x.id !== id);
+  closeModal();
   refreshAllViews();
   showToast('Tâche supprimée', 'ok');
 }
 
 /* ════════════════════════════════════════════════
-   MES NOTES (pages de texte façon "Word", liées à un projet)
+   NOTES
 ════════════════════════════════════════════════ */
 let activeNotesProject = 'all';
 
@@ -2806,7 +3093,7 @@ function deleteNote(id) {
 }
 
 /* ════════════════════════════════════════════════
-   INTERNAL REMARKS (remarques entre utilisateurs)
+   INTERNAL REMARKS
 ════════════════════════════════════════════════ */
 function renderRemarks() {
   const toSel = document.getElementById('remark-to');
@@ -2916,7 +3203,7 @@ function renderCalendar() {
   document.getElementById('cal-month-label').textContent = `${MONTH_NAMES[calViewDate.getMonth()]} ${calViewDate.getFullYear()}`;
   const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
   const firstDay = new Date(year, month, 1);
-  const startOffset = (firstDay.getDay() + 6) % 7; // Monday = 0
+  const startOffset = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
   const events = getCalendarEvents();
@@ -2983,7 +3270,6 @@ let timerInterval = null;
 function startTimer(taskId) {
   const t = TASKS.find(x => x.id === taskId);
   if (!t || t.timerRunning) return;
-  // stop any other running timer first
   TASKS.forEach(x => { if (x.timerRunning && x.id !== taskId) stopTimer(x.id, true); });
   t.timerRunning = true;
   t.timerStart = Date.now();
@@ -3026,7 +3312,7 @@ function formatHours(h) {
 function saveTaskEstimate(taskId) {
   const t = TASKS.find(x => x.id === taskId);
   const val = parseFloat(document.getElementById('tt-estimate-input').value);
-  if (!isNaN(val) && val >= 0) { t.estimate = val; showToast('Estimation mise à jour', 'ok'); saveState(); }
+  if (!isNaN(val) && val >= 0) { t.estimate = val; showToast('Estimation mise à jour', 'ok'); refreshAllViews(); }
 }
 
 /* ════════════════════════════════════════════════
@@ -3233,6 +3519,16 @@ function renderProfile() {
           </div>
           <button class="btn btn-primary" onclick="changeOwnPassword()">🔒 Mettre à jour le mot de passe</button>
         </div>
+        <div class="profile-card">
+          <h3 style="font-size:13.5px;font-weight:700;margin-bottom:8px">💾 Sauvegarde &amp; Restauration</h3>
+          <p style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:12px">Les données de Projeo sont stockées localement dans ce navigateur. Exportez-les régulièrement pour éviter toute perte, ou pour les transférer vers un autre appareil.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="exportData()">⬇ Exporter une sauvegarde (JSON)</button>
+            ${CU.role === 'ADMIN' ? `<button class="btn btn-ghost" onclick="triggerImportData()">⬆ Importer une sauvegarde</button>
+            <input type="file" id="import-data-input" accept="application/json" style="display:none" onchange="handleImportData(this)">` : ''}
+          </div>
+          ${CU.role !== 'ADMIN' ? `<p style="font-size:11px;color:var(--text3);margin-top:8px">Seul un administrateur peut importer une sauvegarde (cela remplace les données de toute l'équipe).</p>` : ''}
+        </div>
       </div>
     </div>`;
 }
@@ -3277,6 +3573,165 @@ function changeOwnPassword() {
 }
 
 /* ════════════════════════════════════════════════
+   SAUVEGARDE / RESTAURATION (export-import JSON)
+════════════════════════════════════════════════ */
+function exportData() {
+  const state = {
+    app: 'projeo', version: 1,
+    exportedAt: new Date().toISOString(), exportedBy: CU.name,
+    USERS, PROJECTS, SPRINTS, TASKS, TODOS, NOTES, REMARKS, MEETINGS, FILES, ACTIVITIES, NOTIFICATIONS,
+  };
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `projeo-sauvegarde-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  addActivity(CU.id, 'a exporté une sauvegarde des données', '', '');
+  showToast('Sauvegarde téléchargée', 'ok');
+}
+
+function triggerImportData() {
+  if (CU.role !== 'ADMIN') { showToast('Seul un administrateur peut importer une sauvegarde', 'err'); return; }
+  document.getElementById('import-data-input').click();
+}
+
+function handleImportData(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (!confirm("Importer cette sauvegarde va remplacer TOUTES les données actuelles de la plateforme (projets, tâches, membres, etc.) pour toute l'équipe. Cette action est irréversible. Continuer ?")) { input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data || !Array.isArray(data.USERS) || !Array.isArray(data.PROJECTS)) {
+        showToast('Fichier de sauvegarde invalide ou incompatible', 'err');
+        input.value = '';
+        return;
+      }
+      USERS = data.USERS;
+      PROJECTS = data.PROJECTS;
+      SPRINTS = data.SPRINTS || [];
+      TASKS = data.TASKS || [];
+      TODOS = data.TODOS || [];
+      NOTES = data.NOTES || [];
+      REMARKS = data.REMARKS || [];
+      MEETINGS = data.MEETINGS || [];
+      FILES = data.FILES || [];
+      ACTIVITIES = data.ACTIVITIES || [];
+      NOTIFICATIONS = data.NOTIFICATIONS || [];
+      // Réinitialise les champs éventuellement manquants sur les tâches importées
+      TASKS.forEach(t => {
+        if (t.estimate === undefined) t.estimate = 4;
+        if (t.sessions === undefined) t.sessions = [];
+        if (t.subtasks === undefined) t.subtasks = [];
+        if (t.comments === undefined) t.comments = [];
+        if (t.tags === undefined) t.tags = [];
+        t.timerRunning = false;
+        t.timerStart = null;
+      });
+      TODOS.forEach(t => { if (t.subtasks === undefined) t.subtasks = []; });
+      // Reste connecté avec le même compte si toujours présent dans les données importées
+      const stillExists = USERS.find(u => u.id === CU.id);
+      if (stillExists) CU = stillExists;
+      saveState();
+      showToast('Données importées avec succès', 'ok');
+      bootApp();
+    } catch (err) {
+      showToast('Erreur lors de la lecture du fichier de sauvegarde', 'err');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ════════════════════════════════════════════════
+   RECHERCHE GLOBALE (Ctrl+K)
+════════════════════════════════════════════════ */
+function openSearchPalette() {
+  if (!CU) return;
+  openModal('🔍 Recherche globale', `
+    <input type="text" id="search-input" placeholder="Rechercher une tâche, un projet, un membre, une note…" style="width:100%;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:14px;outline:none;margin-bottom:6px" oninput="performGlobalSearch(this.value)">
+    <div id="search-results"><p style="font-size:12px;color:var(--text3);text-align:center;padding:24px 0">Commencez à taper pour rechercher…</p></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Fermer</button>`);
+  document.getElementById('modal').style.maxWidth = '560px';
+  setTimeout(() => document.getElementById('search-input')?.focus(), 60);
+}
+
+function performGlobalSearch(qRaw) {
+  const q = (qRaw||'').trim().toLowerCase();
+  const results = document.getElementById('search-results');
+  if (!results) return;
+  if (!q) { results.innerHTML = '<p style="font-size:12px;color:var(--text3);text-align:center;padding:24px 0">Commencez à taper pour rechercher…</p>'; return; }
+
+  const isAdmin = CU.role === 'ADMIN';
+  let html = '';
+
+  // Tâches (respecte la même visibilité que le Kanban)
+  const visibleTasks = TASKS.filter(t => isAdmin || t.assignee === CU.id);
+  const taskMatches = visibleTasks.filter(t => t.title.toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q)).slice(0,6);
+  if (taskMatches.length) {
+    html += `<div class="search-group-label">📋 Tâches</div>`;
+    html += taskMatches.map(t => {
+      const proj = PROJECTS.find(p=>p.id===t.projectId);
+      return `<div class="search-result-item" onclick="closeModal();openTaskDetail('${t.id}')">
+        <div style="font-size:12.5px;font-weight:600">${t.title}</div>
+        <div style="font-size:11px;color:var(--text3)">${proj?.name||''}${proj?' · ':''}${{backlog:'Backlog',todo:'À faire',inprogress:'En cours',done:'Terminé'}[t.status]}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Projets
+  const projMatches = PROJECTS.filter(p => (isAdmin || p.members.includes(CU.id)) && (p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q))).slice(0,5);
+  if (projMatches.length) {
+    html += `<div class="search-group-label">📁 Projets</div>`;
+    html += projMatches.map(p => `<div class="search-result-item" onclick="closeModal();selectProject('${p.id}')">
+        <div style="font-size:12.5px;font-weight:600">${p.icon} ${p.name}</div>
+        <div style="font-size:11px;color:var(--text3)">${p.desc||''}</div>
+      </div>`).join('');
+  }
+
+  // Membres
+  const memberMatches = USERS.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)).slice(0,5);
+  if (memberMatches.length) {
+    html += `<div class="search-group-label">👥 Membres</div>`;
+    html += memberMatches.map(u => `<div class="search-result-item" onclick="closeModal();navigate('members');setTimeout(()=>openMemberProfile('${u.id}'),150)">
+        <div style="font-size:12.5px;font-weight:600">${u.avatar||''} ${u.name}</div>
+        <div style="font-size:11px;color:var(--text3)">${u.email}</div>
+      </div>`).join('');
+  }
+
+  // Mes notes
+  const noteMatches = NOTES.filter(n => n.userId===CU.id && ((n.title||'').toLowerCase().includes(q) || (n.content||'').toLowerCase().includes(q))).slice(0,5);
+  if (noteMatches.length) {
+    html += `<div class="search-group-label">📝 Mes notes</div>`;
+    html += noteMatches.map(n => `<div class="search-result-item" onclick="closeModal();navigate('notes');setTimeout(()=>openNoteModal('${n.id}'),150)">
+        <div style="font-size:12.5px;font-weight:600">${n.title||'Sans titre'}</div>
+      </div>`).join('');
+  }
+
+  // Ma to-do list
+  const todoMatches = TODOS.filter(t => t.userId===CU.id && t.title.toLowerCase().includes(q)).slice(0,5);
+  if (todoMatches.length) {
+    html += `<div class="search-group-label">✅ Ma to-do list</div>`;
+    html += todoMatches.map(t => `<div class="search-result-item" onclick="closeModal();navigate('todo');setTimeout(()=>openTodoDetail('${t.id}'),150)">
+        <div style="font-size:12.5px;font-weight:600;${t.done?'text-decoration:line-through;color:var(--text3)':''}">${t.title}</div>
+      </div>`).join('');
+  }
+
+  if (!html) html = `<p style="font-size:12.5px;color:var(--text3);text-align:center;padding:24px 0">Aucun résultat pour « ${qRaw} »</p>`;
+  results.innerHTML = html;
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    openSearchPalette();
+  }
+});
+
+/* ════════════════════════════════════════════════
    MODAL SYSTEM
 ════════════════════════════════════════════════ */
 function openModal(title, bodyHTML, footerHTML) {
@@ -3285,6 +3740,20 @@ function openModal(title, bodyHTML, footerHTML) {
   document.getElementById('modal-footer').innerHTML = footerHTML;
   document.getElementById('modal').style.maxWidth = '520px';
   document.getElementById('modal-backdrop').classList.add('open');
+  // Focus automatique sur le premier champ utile du formulaire, pour que la
+  // saisie fonctionne immédiatement même si l'utilisateur tape très vite
+  // juste après avoir cliqué sur "Nouveau" / "Ajouter" / "Modifier".
+  setTimeout(() => {
+    const focusEl = document.querySelector(
+      '#modal-body input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]), #modal-body textarea, #modal-body select'
+    );
+    if (focusEl) {
+      focusEl.focus();
+      if (focusEl.select && (focusEl.tagName === 'INPUT' || focusEl.tagName === 'TEXTAREA')) {
+        try { focusEl.select(); } catch(e) {}
+      }
+    }
+  }, 60);
 }
 function closeModal() { document.getElementById('modal-backdrop').classList.remove('open'); }
 function closeModalOnBg(e) { if(e.target === document.getElementById('modal-backdrop')) closeModal(); }
@@ -3302,8 +3771,7 @@ function showToast(msg, type='ok') {
 }
 
 /* ════════════════════════════════════════════════
-   PERSISTENCE (localStorage) — corrige la réinitialisation
-   des données à chaque fermeture/ouverture de la plateforme.
+   PERSISTENCE (localStorage)
 ════════════════════════════════════════════════ */
 const STORAGE_KEY = 'projeo_data_v1';
 
@@ -3349,8 +3817,6 @@ function loadState() {
       meetingIdCounter = state.counters.meetingIdCounter ?? meetingIdCounter;
       fileIdCounter    = state.counters.fileIdCounter    ?? fileIdCounter;
     }
-    // recalcule les tâches en cours de chronométrage : on ne peut pas garder
-    // un chrono "vivant" entre deux sessions du navigateur, donc on le clôture proprement
     TASKS.forEach(t => {
       if (t.timerRunning && t.timerStart) {
         const durationH = (Date.now() - t.timerStart) / 3600000;
@@ -3359,27 +3825,25 @@ function loadState() {
       }
       t.timerRunning = false;
       t.timerStart = null;
+      if (t.subtasks === undefined) t.subtasks = [];
     });
+    TODOS.forEach(t => { if (t.subtasks === undefined) t.subtasks = []; });
     return state.sessionUid || null;
   } catch (e) { console.warn('Chargement impossible :', e); return null; }
 }
 
 /* ════════════════════════════════════════════════
    INITIALISATION FINALE
-   (placée à la toute fin du script pour que toutes les
-   variables let/const ci-dessus soient déjà initialisées)
 ════════════════════════════════════════════════ */
 (function initApp() {
   const sessionUid = loadState();
 
-  // Pré-remplir l'email mémorisé sur l'écran de connexion
   const remembered = safeGet('sf_remember_email');
   if (remembered) {
     document.getElementById('auth-email').value = remembered;
     document.getElementById('auth-remember').checked = true;
   }
 
-  // Reconnexion automatique si une session valide était active
   if (sessionUid) {
     const user = USERS.find(u => u.id === sessionUid && u.active !== false);
     if (user) {
