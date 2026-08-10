@@ -827,14 +827,14 @@ input,textarea,select{font-family:'Inter',sans-serif}
       <span class="auth-google-g"></span> Continuer avec Google
     </button>
     <p class="auth-signup">Pas encore de compte ? <span onclick="showToast('Seul un administrateur peut créer un nouveau compte','info')">Contacter un administrateur</span></p>
-    <div class="auth-demos">
-      <p>Comptes de démonstration</p>
-      <div class="demo-btns">
-        <span class="demo-tag" onclick="fillDemo('admin@projeo.com','admin123')">🛡️ Admin</span>
-        <span class="demo-tag" onclick="fillDemo('siwar@projeo.com','siwar123')">👩‍💻 Siwar (Dev)</span>
-        <span class="demo-tag" onclick="fillDemo('arij@projeo.com','arij123')">👩‍💻 Arij (Dev)</span>
-      </div>
-    </div>
+  <div class="auth-demos">
+  <p>Comptes de démonstration</p>
+  <div class="demo-btns">
+    <span class="demo-tag" onclick="fillDemo('admin@projeo.com')">🛡️ Admin</span>
+    <span class="demo-tag" onclick="fillDemo('siwar@projeo.com')">👩‍💻 Siwar (Dev)</span>
+    <span class="demo-tag" onclick="fillDemo('arij@projeo.com')">👩‍💻 Arij (Dev)</span>
+  </div>
+</div>
   </div>
   <div class="auth-illus-panel">
     <div class="auth-illus-shape s1"></div>
@@ -1390,9 +1390,16 @@ let toastTimer = null;
 /* ════════════════════════════════════════════════
    AUTH
 ════════════════════════════════════════════════ */
-function fillDemo(email, pass) {
+function fillDemo(email) {
   document.getElementById('auth-email').value = email;
+  const pass = window.prompt('Veuillez saisir le mot de passe pour ' + email);
+  if (pass === null) {
+    document.getElementById('auth-pass').value = '';
+    document.getElementById('auth-pass').focus();
+    return;
+  }
   document.getElementById('auth-pass').value = pass;
+  document.getElementById('auth-pass').focus();
 }
 
 function toggleAuthPass() {
