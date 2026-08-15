@@ -787,6 +787,7 @@ input,textarea,select{font-family:'Inter',sans-serif}
   .sprint-stats{grid-template-columns:repeat(2,1fr)}
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -1236,6 +1237,89 @@ let USERS = [
 ];
 let userIdCounter = 3;
 
+/* ════════════════════════════════════════════════
+   SUPABASE — STOCKAGE PARTAGÉ ENTRE TOUS LES UTILISATEURS
+   Remplacez les deux valeurs ci-dessous par celles de votre
+   projet Supabase (Project Settings → API).
+════════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://supabase.com/dashboard/project/ysfxzscqsywsvfkjqstm';
+const SUPABASE_ANON_KEY = 'sb_secret_fO5qTUTglPyMXQKGJWF2mQ_4a7tjm8s';
+let supabaseClient = null;
+let lastLocalWriteAt = 0;
+try {
+  if (window.supabase && !SUPABASE_URL.includes('VOTRE_')) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) { console.warn('Supabase indisponible, mode local uniquement:', e); }
+
+// Applique un état (venant de Supabase ou du localStorage) aux variables globales
+function applyState(state) {
+  if (!state) return;
+  if (state.USERS) USERS = state.USERS;
+  if (state.PROJECTS) PROJECTS = state.PROJECTS;
+  if (state.SPRINTS) SPRINTS = state.SPRINTS;
+  if (state.TASKS) TASKS = state.TASKS;
+  if (state.TODOS) TODOS = state.TODOS;
+  if (state.NOTES) NOTES = state.NOTES;
+  if (state.REMARKS) REMARKS = state.REMARKS;
+  if (state.MEETINGS) MEETINGS = state.MEETINGS;
+  if (state.FILES) FILES = state.FILES;
+  if (state.ACTIVITIES) ACTIVITIES = state.ACTIVITIES;
+  if (state.NOTIFICATIONS) NOTIFICATIONS = state.NOTIFICATIONS;
+  if (state.counters) {
+    userIdCounter    = state.counters.userIdCounter    ?? userIdCounter;
+    taskIdCounter    = state.counters.taskIdCounter    ?? taskIdCounter;
+    projIdCounter    = state.counters.projIdCounter    ?? projIdCounter;
+    sprintIdCounter  = state.counters.sprintIdCounter  ?? sprintIdCounter;
+    todoIdCounter    = state.counters.todoIdCounter    ?? todoIdCounter;
+    noteIdCounter    = state.counters.noteIdCounter    ?? noteIdCounter;
+    remarkIdCounter  = state.counters.remarkIdCounter  ?? remarkIdCounter;
+    meetingIdCounter = state.counters.meetingIdCounter ?? meetingIdCounter;
+    fileIdCounter    = state.counters.fileIdCounter    ?? fileIdCounter;
+  }
+  TASKS.forEach(t => {
+    t.timerRunning = false;
+    t.timerStart = null;
+    if (t.subtasks === undefined) t.subtasks = [];
+  });
+  TODOS.forEach(t => { if (t.subtasks === undefined) t.subtasks = []; });
+}
+
+// Re-rend la vue actuellement affichée (utilisé quand des données arrivent d'un autre utilisateur)
+function reRenderCurrentView() {
+  if (!CU) return;
+  renderSbProjects();
+  if (activeView === 'dashboard') renderDashboard();
+  else if (activeView === 'kanban') renderKanban();
+  else if (activeView === 'projects') renderProjects();
+  else if (activeView === 'sprints') renderSprints();
+  else if (activeView === 'members') renderMembers();
+  else if (activeView === 'calendar') renderCalendar();
+  else if (activeView === 'timeline') renderTimeline();
+  else if (activeView === 'todo') renderTodos();
+  else if (activeView === 'notes') renderNotes();
+  else if (activeView === 'remarks') renderRemarks();
+  else if (activeView === 'files') renderFiles();
+  renderNotifs();
+}
+
+// Écoute en temps réel les changements faits par d'autres utilisateurs
+function initRealtimeSync() {
+  if (!supabaseClient) return;
+  supabaseClient
+    .channel('app_state_changes')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_state', filter: 'id=eq.main' }, payload => {
+      if (Date.now() - lastLocalWriteAt < 1500) return; // ignore l'écho de notre propre écriture
+      const newData = payload.new && payload.new.data;
+      if (!newData) return;
+      applyState(newData);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(newData)); } catch(e) {}
+      reRenderCurrentView();
+      if (CU) showToast('Données mises à jour par un autre membre de l\'équipe', 'info');
+    })
+    .subscribe();
+}
+
 let PROJECTS = [
   {id:'p1',name:'Plateforme E-Commerce',desc:'Développement complet de la plateforme de vente en ligne',icon:'🛒',color:'#7C5CFC',status:'active',members:['u1','u2']},
   {id:'p2',name:'App Mobile Banking',desc:'Application mobile de gestion bancaire iOS et Android',icon:'📱',color:'#10B981',status:'active',members:['u1','u2']},
@@ -1449,7 +1533,6 @@ function doLogout() {
   const remembered = safeGet('sf_remember_email');
   document.getElementById('auth-email').value = remembered || '';
   if (remembered) document.getElementById('auth-remember').checked = true;
-  saveState();
 }
 
 /* ════════════════════════════════════════════════
@@ -1781,7 +1864,6 @@ function loadKanban() {
   const board = document.getElementById('kanban-board');
   const isAdmin = CU.role === 'ADMIN';
 
-  // ── Filtres (recherche texte, priorité, assigné) ──
   const assigneeSel = document.getElementById('kb-filter-assignee');
   if (isAdmin) {
     assigneeSel.style.display = '';
@@ -3528,7 +3610,7 @@ function renderProfile() {
         </div>
         <div class="profile-card">
           <h3 style="font-size:13.5px;font-weight:700;margin-bottom:8px">💾 Sauvegarde &amp; Restauration</h3>
-          <p style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:12px">Les données de Projeo sont stockées localement dans ce navigateur. Exportez-les régulièrement pour éviter toute perte, ou pour les transférer vers un autre appareil.</p>
+          <p style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:12px">Les données de Projeo sont stockées dans une base de données partagée (Supabase). Exportez-les régulièrement pour éviter toute perte.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-ghost" onclick="exportData()">⬇ Exporter une sauvegarde (JSON)</button>
             ${CU.role === 'ADMIN' ? `<button class="btn btn-ghost" onclick="triggerImportData()">⬆ Importer une sauvegarde</button>
@@ -3628,7 +3710,6 @@ function handleImportData(input) {
       FILES = data.FILES || [];
       ACTIVITIES = data.ACTIVITIES || [];
       NOTIFICATIONS = data.NOTIFICATIONS || [];
-      // Réinitialise les champs éventuellement manquants sur les tâches importées
       TASKS.forEach(t => {
         if (t.estimate === undefined) t.estimate = 4;
         if (t.sessions === undefined) t.sessions = [];
@@ -3639,7 +3720,6 @@ function handleImportData(input) {
         t.timerStart = null;
       });
       TODOS.forEach(t => { if (t.subtasks === undefined) t.subtasks = []; });
-      // Reste connecté avec le même compte si toujours présent dans les données importées
       const stillExists = USERS.find(u => u.id === CU.id);
       if (stillExists) CU = stillExists;
       saveState();
@@ -3675,7 +3755,6 @@ function performGlobalSearch(qRaw) {
   const isAdmin = CU.role === 'ADMIN';
   let html = '';
 
-  // Tâches (respecte la même visibilité que le Kanban)
   const visibleTasks = TASKS.filter(t => isAdmin || t.assignee === CU.id);
   const taskMatches = visibleTasks.filter(t => t.title.toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q)).slice(0,6);
   if (taskMatches.length) {
@@ -3689,7 +3768,6 @@ function performGlobalSearch(qRaw) {
     }).join('');
   }
 
-  // Projets
   const projMatches = PROJECTS.filter(p => (isAdmin || p.members.includes(CU.id)) && (p.name.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q))).slice(0,5);
   if (projMatches.length) {
     html += `<div class="search-group-label">📁 Projets</div>`;
@@ -3699,7 +3777,6 @@ function performGlobalSearch(qRaw) {
       </div>`).join('');
   }
 
-  // Membres
   const memberMatches = USERS.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)).slice(0,5);
   if (memberMatches.length) {
     html += `<div class="search-group-label">👥 Membres</div>`;
@@ -3709,7 +3786,6 @@ function performGlobalSearch(qRaw) {
       </div>`).join('');
   }
 
-  // Mes notes
   const noteMatches = NOTES.filter(n => n.userId===CU.id && ((n.title||'').toLowerCase().includes(q) || (n.content||'').toLowerCase().includes(q))).slice(0,5);
   if (noteMatches.length) {
     html += `<div class="search-group-label">📝 Mes notes</div>`;
@@ -3718,7 +3794,6 @@ function performGlobalSearch(qRaw) {
       </div>`).join('');
   }
 
-  // Ma to-do list
   const todoMatches = TODOS.filter(t => t.userId===CU.id && t.title.toLowerCase().includes(q)).slice(0,5);
   if (todoMatches.length) {
     html += `<div class="search-group-label">✅ Ma to-do list</div>`;
@@ -3747,9 +3822,6 @@ function openModal(title, bodyHTML, footerHTML) {
   document.getElementById('modal-footer').innerHTML = footerHTML;
   document.getElementById('modal').style.maxWidth = '520px';
   document.getElementById('modal-backdrop').classList.add('open');
-  // Focus automatique sur le premier champ utile du formulaire, pour que la
-  // saisie fonctionne immédiatement même si l'utilisateur tape très vite
-  // juste après avoir cliqué sur "Nouveau" / "Ajouter" / "Modifier".
   setTimeout(() => {
     const focusEl = document.querySelector(
       '#modal-body input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]), #modal-body textarea, #modal-body select'
@@ -3778,72 +3850,61 @@ function showToast(msg, type='ok') {
 }
 
 /* ════════════════════════════════════════════════
-   PERSISTENCE (localStorage)
+   PERSISTENCE (Supabase — partagé — + localStorage de secours)
 ════════════════════════════════════════════════ */
 const STORAGE_KEY = 'projeo_data_v1';
 
-function saveState() {
-  try {
-    const state = {
-      USERS, PROJECTS, SPRINTS, TASKS, TODOS, NOTES, REMARKS, MEETINGS, FILES,
-      ACTIVITIES, NOTIFICATIONS,
-      counters: {
-        userIdCounter, taskIdCounter, projIdCounter, sprintIdCounter,
-        todoIdCounter, noteIdCounter, remarkIdCounter, meetingIdCounter, fileIdCounter
-      },
-      sessionUid: CU ? CU.id : null,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) { console.warn('Sauvegarde impossible :', e); }
+async function saveState() {
+  const state = {
+    USERS, PROJECTS, SPRINTS, TASKS, TODOS, NOTES, REMARKS, MEETINGS, FILES,
+    ACTIVITIES, NOTIFICATIONS,
+    counters: {
+      userIdCounter, taskIdCounter, projIdCounter, sprintIdCounter,
+      todoIdCounter, noteIdCounter, remarkIdCounter, meetingIdCounter, fileIdCounter
+    },
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { console.warn('Sauvegarde locale impossible :', e); }
+  if (supabaseClient) {
+    lastLocalWriteAt = Date.now();
+    try {
+      const { error } = await supabaseClient
+        .from('app_state')
+        .upsert({ id: 'main', data: state, updated_at: new Date().toISOString() });
+      if (error) console.warn('Sauvegarde Supabase impossible :', error);
+    } catch (e) { console.warn('Sauvegarde Supabase impossible :', e); }
+  }
 }
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const state = JSON.parse(raw);
-    if (state.USERS) USERS = state.USERS;
-    if (state.PROJECTS) PROJECTS = state.PROJECTS;
-    if (state.SPRINTS) SPRINTS = state.SPRINTS;
-    if (state.TASKS) TASKS = state.TASKS;
-    if (state.TODOS) TODOS = state.TODOS;
-    if (state.NOTES) NOTES = state.NOTES;
-    if (state.REMARKS) REMARKS = state.REMARKS;
-    if (state.MEETINGS) MEETINGS = state.MEETINGS;
-    if (state.FILES) FILES = state.FILES;
-    if (state.ACTIVITIES) ACTIVITIES = state.ACTIVITIES;
-    if (state.NOTIFICATIONS) NOTIFICATIONS = state.NOTIFICATIONS;
-    if (state.counters) {
-      userIdCounter    = state.counters.userIdCounter    ?? userIdCounter;
-      taskIdCounter    = state.counters.taskIdCounter    ?? taskIdCounter;
-      projIdCounter    = state.counters.projIdCounter    ?? projIdCounter;
-      sprintIdCounter  = state.counters.sprintIdCounter  ?? sprintIdCounter;
-      todoIdCounter    = state.counters.todoIdCounter    ?? todoIdCounter;
-      noteIdCounter    = state.counters.noteIdCounter    ?? noteIdCounter;
-      remarkIdCounter  = state.counters.remarkIdCounter  ?? remarkIdCounter;
-      meetingIdCounter = state.counters.meetingIdCounter ?? meetingIdCounter;
-      fileIdCounter    = state.counters.fileIdCounter    ?? fileIdCounter;
-    }
-    TASKS.forEach(t => {
-      if (t.timerRunning && t.timerStart) {
-        const durationH = (Date.now() - t.timerStart) / 3600000;
-        t.sessions = t.sessions || [];
-        t.sessions.push({start:t.timerStart, end:Date.now(), durationH:+durationH.toFixed(3)});
+async function loadState() {
+  if (supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('app_state').select('data').eq('id', 'main').maybeSingle();
+      if (!error && data && data.data && Object.keys(data.data).length) {
+        applyState(data.data);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data.data)); } catch(e) {}
+      } else {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) applyState(JSON.parse(raw));
       }
-      t.timerRunning = false;
-      t.timerStart = null;
-      if (t.subtasks === undefined) t.subtasks = [];
-    });
-    TODOS.forEach(t => { if (t.subtasks === undefined) t.subtasks = []; });
-    return state.sessionUid || null;
-  } catch (e) { console.warn('Chargement impossible :', e); return null; }
+    } catch (e) {
+      console.warn('Chargement Supabase impossible, repli local :', e);
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) applyState(JSON.parse(raw));
+    }
+  } else {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) applyState(JSON.parse(raw));
+  }
+  // La session de connexion reste propre à cet appareil (pas partagée entre utilisateurs)
+  return safeGet('sf_session_uid');
 }
 
 /* ════════════════════════════════════════════════
    INITIALISATION FINALE
 ════════════════════════════════════════════════ */
-(function initApp() {
-  const sessionUid = loadState();
+(async function initApp() {
+  const sessionUid = await loadState();
 
   const remembered = safeGet('sf_remember_email');
   if (remembered) {
@@ -3858,9 +3919,10 @@ function loadState() {
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('app').classList.add('visible');
       bootApp();
-      return;
     }
   }
+
+  initRealtimeSync();
 })();
 </script>
 </body>
